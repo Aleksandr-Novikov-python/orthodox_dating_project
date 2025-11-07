@@ -28,8 +28,17 @@ flower:
 web:
 	@xdg-open http://localhost:8000
 
+ps:
+	@docker-compose ps
 
+test:
+	@docker-compose exec web python manage.py test
 
+clean:
+	@docker system prune -f
+
+pipcheck:
+	@docker-compose exec web pip check
 
 
 
