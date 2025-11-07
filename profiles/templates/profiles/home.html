@@ -1,0 +1,449 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Основной контейнер */
+    .home-container {
+        padding-bottom: 60px;
+    }
+
+    /* Hero секция */
+    .hero-section {
+        background: linear-gradient(135deg, #f4f1bb 0%, #e9d884 50%, #d1a00dff 100%);
+        padding: 80px 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-title {
+        color: #614a04ff;
+        font-weight: 800;
+        font-size: 3.5rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 25px;
+        animation: fadeInDown 1s ease;
+    }
+
+    .hero-subtitle {
+        color: #0c0d0b;
+        font-size: 1.4rem;
+        font-weight: 400;
+        max-width: 700px;
+        margin: 0 auto 30px;
+        animation: fadeInUp 1s ease 0.3s both;
+    }
+
+    .hero-divider {
+        border: none;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #614a04ff, transparent);
+        margin: 30px auto;
+        max-width: 400px;
+        animation: fadeIn 1s ease 0.6s both;
+    }
+
+    /* Анимации появления */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* Кнопки Hero */
+    .btn-hero {
+        background-color: #614a04ff;
+        color: #f4f1bb;
+        border: 3px solid #614a04ff;
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(97, 74, 4, 0.3);
+        animation: fadeInUp 1s ease 0.9s both;
+    }
+
+    .btn-hero:hover {
+        background-color: #f4f1bb;
+        color: #614a04ff;
+        border-color: #614a04ff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(97, 74, 4, 0.4);
+    }
+
+    .btn-hero-secondary {
+        background-color: transparent;
+        color: #614a04ff;
+        border: 3px solid #614a04ff;
+        animation: fadeInUp 1s ease 1s both;
+    }
+
+    .btn-hero-secondary:hover {
+        background-color: #614a04ff;
+        color: #f4f1bb;
+        border-color: #614a04ff;
+    }
+
+    /* Карточки преимуществ */
+    .features-section {
+        padding: 40px 0;
+    }
+
+    .feature-card {
+        background: #ffffff;
+        border: 2px solid #e9d884;
+        border-radius: 15px;
+        padding: 40px 30px;
+        height: 100%;
+        transition: all 0.4s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 0;
+        height: 0;
+        background: radial-gradient(circle, rgba(209, 160, 13, 0.1) 0%, transparent 70%);
+        transition: all 0.5s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+        border-color: #d1a00dff;
+    }
+
+    .feature-card:hover::before {
+        width: 200%;
+        height: 200%;
+    }
+
+    .feature-icon {
+        font-size: 4rem;
+        color: #d1a00dff;
+        margin-bottom: 20px;
+        transition: all 0.4s ease;
+        filter: drop-shadow(0 4px 8px rgba(209, 160, 13, 0.3));
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.2) rotate(5deg);
+        color: #b88f0b;
+    }
+
+    .feature-title {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        position: relative;
+    }
+
+    .feature-text {
+        color: #6c757d;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        position: relative;
+    }
+
+    /* Статистика (опционально) */
+    .stats-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 50px 0;
+        margin: 60px 0;
+        border-radius: 20px;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 20px;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #d1a00dff;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    /* CTA секция */
+    .cta-section {
+        background: linear-gradient(135deg, #614a04ff 0%, #d1a00dff 100%);
+        padding: 60px 40px;
+        border-radius: 20px;
+        text-align: center;
+        color: #fff;
+        margin-top: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .cta-text {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+        opacity: 0.9;
+    }
+
+    .btn-cta {
+        background-color: #fff;
+        color: #614a04ff;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-cta:hover {
+        background-color: #f4f1bb;
+        color: #614a04ff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .feature-card {
+            margin-bottom: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <!-- HERO СЕКЦИЯ -->
+    <div class="hero-section">
+        <div class="container hero-content">
+            <h1 class="hero-title">
+                <i class="bi bi-heart-fill"></i>
+                Семья начинается здесь
+            </h1>
+            <p class="hero-subtitle">
+                Православная площадка для серьезных знакомств с целью создания крепкой семьи,
+                основанной на вере, любви и взаимном уважении
+
+            </p>
+            <hr class="hero-divider">
+
+            {% if user.is_authenticated %}
+                <a class="btn btn-hero" href="{% url 'profiles:profile_list' %}" role="button">
+                    <i class="bi bi-search"></i> Смотреть анкеты
+                </a>
+            {% else %}
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a class="btn btn-hero" href="{% url 'profiles:register' %}" role="button">
+                        <i class="bi bi-person-plus"></i> Создать анкету
+                    </a>
+                    <a class="btn btn-hero btn-hero-secondary" href="{% url 'login' %}" role="button">
+                        <i class="bi bi-box-arrow-in-right"></i> Войти
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ПРЕИМУЩЕСТВА -->
+    <div class="container features-section">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold" style="color: #614a04ff;">
+                    Почему выбирают нас?
+                </h2>
+                <p class="lead text-muted">Создаём условия для искренних и серьёзных отношений</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-patch-check-fill feature-icon"></i>
+                    <h3 class="feature-title">Верификация профилей</h3>
+                    <p class="feature-text">
+                        Мы тщательно проверяем каждую анкету, чтобы создать безопасную
+                        и доверительную атмосферу для знакомств
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-shield-lock-fill feature-icon"></i>
+                    <h3 class="feature-title">Полная приватность</h3>
+                    <p class="feature-text">
+                        Ваши данные и переписки надёжно защищены. Общение становится
+                        доступным только после взаимной симпатии
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="bi bi-heart-fill feature-icon"></i>
+                    <h3 class="feature-title">Общие ценности</h3>
+                    <p class="feature-text">
+                        Находите единомышленников, разделяющих ваши взгляды на веру,
+                        семью и духовную жизнь
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- СТАТИСТИКА (опционально) -->
+    <div class="container">
+        <div class="stats-section">
+            <div class="row">
+                <div class="col-md-4 stat-item">
+                    <span class="stat-number">
+                        <i class="bi bi-people-fill"></i> 1000+
+                    </span>
+                    <span class="stat-label">Активных пользователей</span>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <span class="stat-number">
+                        <i class="bi bi-heart-fill"></i> 150+
+                    </span>
+                    <span class="stat-label">Счастливых пар</span>
+                </div>
+                <div class="col-md-4 stat-item">
+                    <span class="stat-number">
+                        <i class="bi bi-shield-check"></i> 100%
+                    </span>
+                    <span class="stat-label">Безопасность данных</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ДОПОЛНИТЕЛЬНЫЕ ПРЕИМУЩЕСТВА -->
+    <div class="container features-section">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <i class="bi bi-chat-heart-fill feature-icon"></i>
+                    <h3 class="feature-title">Продуманная система общения</h3>
+                    <p class="feature-text">
+                        Удобные личные сообщения, уведомления о новых письмах и
+                        возможность выразить симпатию одним кликом
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="feature-card">
+                    <i class="bi bi-search-heart feature-icon"></i>
+                    <h3 class="feature-title">Умный поиск</h3>
+                    <p class="feature-text">
+                        Фильтруйте анкеты по возрасту, городу, уровню воцерковленности
+                        и другим важным параметрам
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA СЕКЦИЯ -->
+    {% if not user.is_authenticated %}
+    <div class="container">
+        <div class="cta-section">
+            <h2 class="cta-title">
+                Готовы начать свой путь к счастливой семье?
+            </h2>
+            <p class="cta-text">
+                Присоединяйтесь к нашему сообществу православных христиан уже сегодня
+            </p>
+            <a href="{% url 'profiles:register' %}" class="btn btn-cta">
+                <i class="bi bi-person-plus-fill"></i> Зарегистрироваться бесплатно
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

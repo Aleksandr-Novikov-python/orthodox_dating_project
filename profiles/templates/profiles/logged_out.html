@@ -1,0 +1,474 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}Вы вышли{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер страницы */
+    .logged-out-container {
+        padding: 80px 20px;
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    /* Карточка */
+    .logout-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #e9d884;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeInScale 0.6s ease;
+        max-width: 550px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .logout-card-body {
+        padding: 50px 40px;
+        position: relative;
+    }
+
+    /* Иконка прощания */
+    .goodbye-icon-wrapper {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        animation: waveGoodbye 2s ease-in-out infinite;
+        position: relative;
+    }
+
+    @keyframes waveGoodbye {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(-15deg);
+        }
+        50% {
+            transform: rotate(0deg);
+        }
+        75% {
+            transform: rotate(15deg);
+        }
+    }
+
+    .goodbye-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 140px;
+        height: 140px;
+        border: 3px solid #6c757d;
+        border-radius: 50%;
+        opacity: 0.3;
+        animation: pulse-ring 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0;
+        }
+    }
+
+    .goodbye-icon {
+        color: #fff;
+        font-size: 4rem;
+        animation: handWave 1.5s ease-in-out infinite;
+    }
+
+    @keyframes handWave {
+        0%, 100% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(20deg);
+        }
+        75% {
+            transform: rotate(-10deg);
+        }
+    }
+
+    /* Заголовок */
+    .logout-title {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.6s ease 0.3s both;
+    }
+
+    /* Текст */
+    .logout-text {
+        color: #6c757d;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 30px;
+        animation: fadeInUp 0.6s ease 0.5s both;
+    }
+
+    /* Кнопки */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 0.6s ease 0.7s both;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        color: #614a04ff;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 15px rgba(209, 160, 13, 0.3);
+    }
+
+    .btn-login:hover {
+        background: linear-gradient(135deg, #b88f0b 0%, #d1a00dff 100%);
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(209, 160, 13, 0.4);
+    }
+
+    .btn-home {
+        background-color: #6c757d;
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 15px 40px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-home:hover {
+        background-color: #5a6268;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Информационный блок */
+    .info-box {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left: 4px solid #ffc107;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 30px;
+        animation: fadeInUp 0.6s ease 0.9s both;
+    }
+
+    .info-box-title {
+        color: #856404;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-box-text {
+        color: #856404;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    /* Статистика сеанса (опционально) */
+    .session-stats {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 25px;
+        animation: fadeInUp 0.6s ease 1.1s both;
+    }
+
+    .session-stats-title {
+        color: #1976d2;
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 8px;
+    }
+
+    .stat-icon {
+        color: #2196f3;
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #424242;
+        font-size: 0.8rem;
+        margin-bottom: 3px;
+    }
+
+    .stat-value {
+        color: #1976d2;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Конфетти эффект */
+    .confetti {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        animation: confetti-fall 3s ease-out forwards;
+    }
+
+    @keyframes confetti-fall {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(400px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .logout-card-body {
+            padding: 40px 25px;
+        }
+
+        .goodbye-icon-wrapper {
+            width: 100px;
+            height: 100px;
+        }
+
+        .goodbye-icon {
+            font-size: 3rem;
+        }
+
+        .logout-title {
+            font-size: 1.6rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .btn-login,
+        .btn-home {
+            width: 100%;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logged-out-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="card logout-card border-0">
+                <div class="card-body logout-card-body text-center">
+                    <!-- Иконка прощания -->
+                    <div class="goodbye-icon-wrapper">
+                        <i class="bi bi-hand-thumbs-up-fill goodbye-icon"></i>
+                    </div>
+
+                    <!-- Заголовок -->
+                    <h2 class="logout-title">
+                        Вы успешно вышли из системы
+                    </h2>
+
+                    <!-- Текст -->
+                    <p class="logout-text">
+                        Спасибо, что посетили наш сайт! Мы рады были помочь вам в поиске 
+                        единомышленников. Надеемся увидеть вас снова совсем скоро! 💛
+                    </p>
+
+                    <!-- Кнопки действий -->
+                    <div class="action-buttons">
+                        <a href="{% url 'login' %}" class="btn btn-login">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Войти снова
+                        </a>
+                        <a href="{% url 'profiles:home' %}" class="btn btn-home">
+                            <i class="bi bi-house-fill me-2"></i>
+                            На главную
+                        </a>
+                    </div>
+
+                    <!-- Информационный блок -->
+                    <div class="info-box">
+                        <div class="info-box-title">
+                            <i class="bi bi-shield-check"></i>
+                            Безопасность
+                        </div>
+                        <p class="info-box-text">
+                            Ваш сеанс завершён. Все данные в безопасности. 
+                            Если выход был совершён не вами, срочно смените пароль.
+                        </p>
+                    </div>
+
+                    <!-- Статистика сеанса (опционально) -->
+                    {% if session %}
+                     <!-- Статистика сеанса (опционально) -->
+                    <div class="session-stats">
+                        <div class="session-stats-title">
+                            <i class="bi bi-clock-history"></i> Ваш визит сегодня
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <div class="stat-label">Просмотрено анкет</div>
+                                <div class="stat-value">{{ session.profiles_viewed}}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-heart-fill"></i>
+                                </div>
+                                <div class="stat-label">Проявлено симпатий</div>
+                                <div class="stat-value">{{ session.likes_given }}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-chat-dots-fill"></i>
+                                </div>
+                                <div class="stat-label">Новых сообщений</div>
+                                <div class="stat-value">{{ session.messages_sent }}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon">
+                                    <i class="bi bi-clock-fill"></i>
+                                </div>
+                                <div class="stat-label">Время на сайте</div>
+                                <div class="stat-value">{{ session.get_duration_display}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Дополнительные ссылки -->
+            <div class="text-center mt-4" style="animation: fadeIn 0.6s ease 1.3s both;">
+                <p class="text-muted">
+                    <a href="{% url 'profiles:profile_list' %}" class="text-decoration-none" style="color: #d1a00dff; font-weight: 600;">
+                        <i class="bi bi-search"></i> Посмотреть анкеты без входа
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для эффектов -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Создаём конфетти эффект при загрузке
+    const cardBody = document.querySelector('.logout-card-body');
+    const colors = ['#d1a00dff', '#f4f1bb', '#6c757d', '#ffc107', '#17a2b8'];
+    const confettiCount = 30;
+
+    for (let i = 0; i < confettiCount; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = '0s';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            confetti.style.width = (Math.random() * 5 + 5) + 'px';
+            confetti.style.height = confetti.style.width;
+            cardBody.appendChild(confetti);
+
+            // Удаляем после анимации
+            setTimeout(() => confetti.remove(), 4000);
+        }, i * 50);
+    }
+
+    // Эффект "печатной машинки" для текста (опционально)
+    const logoutText = document.querySelector('.logout-text');
+    if (logoutText) {
+        const originalText = logoutText.textContent;
+        logoutText.textContent = '';
+        let i = 0;
+        
+        const typeWriter = () => {
+            if (i < originalText.length) {
+                logoutText.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 30);
+            }
+        };
+        
+        setTimeout(typeWriter, 600);
+    }
+
+    // Сохраняем время выхода в localStorage для отображения в следующий раз
+    const logoutTime = new Date().toLocaleTimeString('ru-RU', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    localStorage.setItem('lastLogoutTime', logoutTime);
+});
+</script>
+{% endblock %}

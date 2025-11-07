@@ -1,0 +1,546 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}Профиль {{ profile.user.first_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер профиля */
+    .profile-detail-container {
+        padding: 30px 0;
+        min-height: 80vh;
+    }
+
+    /* Основная карточка профиля */
+    .profile-main-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #e9d884;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .profile-main-card:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Контейнер главного фото */
+    .profile-photo-container {
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+    }
+
+    .profile-photo-container img {
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        max-height: 500px;
+        object-fit: cover;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .profile-photo-container img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Информация профиля */
+    .profile-info {
+        padding: 40px 30px;
+        background: #ffffff;
+    }
+
+    /* Заголовок профиля */
+    .profile-name {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    /* Онлайн-индикатор */
+    .online-indicator {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        background-color: #28a745;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 3px #28a745, 0 0 10px rgba(40, 167, 69, 0.5);
+        animation: pulse-online 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-online {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.7;
+            transform: scale(1.2);
+        }
+    }
+
+    /* Подзаголовок */
+    .profile-subtitle {
+        color: #6c757d;
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Верификация */
+    .verification-badge {
+        color: #0d6efd;
+        font-size: 32px;
+        filter: drop-shadow(0 2px 4px rgba(13, 110, 253, 0.3));
+        animation: verify-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes verify-pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    /* Текст "О себе" */
+    .about-text {
+        color: #495057;
+        line-height: 1.8;
+        font-size: 1.05rem;
+        margin: 20px 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-left: 4px solid #d1a00dff;
+        border-radius: 8px;
+    }
+
+    /* Кнопки действий */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    .btn-like {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-like:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    .btn-message {
+        background-color: #0c0d0b;
+        color: #e9d884;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-message:hover {
+        background-color: #1a1b19;
+        color: #f4f1bb;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(12, 13, 11, 0.4);
+    }
+
+    .btn-report {
+        background-color: #6c757d;
+        color: #fff;
+        border: 1px solid #6c757d;
+        border-radius: 8px;
+        padding: 12px 20px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-report:hover {
+        background-color: #5a6268;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Карточки секций */
+    .section-card {
+        background: #ffffff;
+        border: 2px solid #e9d884;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+    }
+
+    .section-header {
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        padding: 20px 25px;
+        border-bottom: 2px solid #e9d884;
+    }
+
+    .section-header h3 {
+        color: #614a04ff;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-body {
+        padding: 25px;
+    }
+
+    /* Фотогалерея */
+    .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .gallery-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .gallery-item img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+
+    .gallery-item:hover img {
+        filter: brightness(0.9);
+    }
+
+    .gallery-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+
+    .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+
+    .gallery-overlay i {
+        color: #fff;
+        font-size: 2rem;
+    }
+
+    /* Пустая галерея */
+    .empty-gallery {
+        text-align: center;
+        padding: 50px 20px;
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-radius: 10px;
+    }
+
+    .empty-gallery i {
+        font-size: 4rem;
+        color: #d1a00dff;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    /* Список информации */
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-list-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: start;
+        gap: 10px;
+    }
+
+    .info-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-list-item:hover {
+        background-color: #f8f9fa;
+        padding-left: 25px;
+    }
+
+    .info-list-item strong {
+        color: #614a04ff;
+        min-width: 200px;
+        display: inline-block;
+    }
+
+    .info-list-item i {
+        color: #d1a00dff;
+        font-size: 1.2rem;
+        margin-top: 2px;
+    }
+
+    /* Модальное окно */
+    .photo-modal .modal-content {
+        background-color: transparent;
+        border: none;
+    }
+
+    .photo-modal .modal-body {
+        padding: 0;
+    }
+
+    .photo-modal img {
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container profile-detail-container">
+    <!-- ОСНОВНАЯ КАРТОЧКА ПРОФИЛЯ -->
+    <div class="card profile-main-card mb-4">
+        <div class="row g-0">
+            <div class="col-lg-4 profile-photo-container">
+                <img src="{{ profile.photo.url }}" alt="Фото {{ profile.user.first_name }}">
+            </div>
+
+            <div class="col-lg-8 profile-info">
+                <h1 class="profile-name">
+                    {{ profile.user.first_name }} {{ profile.patronymic }}
+                    {% if profile.is_online %}
+                        <span class="online-indicator" title="Сейчас онлайн"></span>
+                    {% endif %}
+                </h1>
+
+                <h5 class="profile-subtitle">
+                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                    {{ profile.city }}, {{ profile.age }} лет
+                </h5>
+
+                {% if profile.is_verified %}
+                    <div class="mb-3">
+                        <i class="bi bi-patch-check-fill verification-badge" title="Профиль верифицирован"></i>
+                        <span class="text-primary fw-semibold">Верифицированный профиль</span>
+                    </div>
+                {% endif %}
+
+                <div class="about-text">
+                    <i class="bi bi-quote text-muted"></i>
+                    {{ profile.about_me }}
+                </div>
+
+                <!-- Кнопки действий -->
+                {% if user.is_authenticated and user != profile.user and not profile.user.is_staff %}
+                <div class="action-buttons">
+                    <!-- Форма для симпатии -->
+                    <form method="post" action="{% url 'profiles:add_like' pk=profile.user.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-like">
+                            <i class="bi bi-heart-fill"></i> Выразить симпатию
+                        </button>
+                    </form>
+
+                    <!-- Кнопка сообщения -->
+                    {% if mutual_like %}
+                        <a href="{% url 'profiles:conversation_detail' pk=profile.user.pk %}"
+                           class="btn btn-message">
+                            <i class="bi bi-chat-dots-fill"></i> Написать сообщение
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary"
+                                disabled
+                                title="Написать сообщение можно только после взаимной симпатии">
+                            <i class="bi bi-lock-fill"></i> Написать сообщение
+                        </button>
+                    {% endif %}
+
+                    <!-- Кнопка жалобы -->
+                    <a href="{% url 'profiles:submit_complaint' pk=profile.user.pk %}"
+                       class="btn btn-report ms-auto"
+                       title="Пожаловаться на пользователя">
+                        <i class="bi bi-flag-fill"></i> Пожаловаться
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- БЛОК ФОТОГАЛЕРЕИ -->
+    <div class="card section-card">
+        <div class="section-header">
+            <h3>
+                <i class="bi bi-images"></i>
+                Фотогалерея
+            </h3>
+        </div>
+        <div class="section-body">
+            {% if profile.photos.all %}
+                <div class="row g-3">
+                    {% for photo in profile.photos.all %}
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.id }}">
+                                <img src="{{ photo.image.url }}" alt="Фото {{ profile.user.first_name }}">
+                                <div class="gallery-overlay">
+                                    <i class="bi bi-zoom-in"></i>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-gallery">
+                    <i class="bi bi-image"></i>
+                    <p class="text-muted mb-0">У пользователя нет дополнительных фотографий</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- БЛОК С ДЕТАЛЬНОЙ ИНФОРМАЦИЕЙ -->
+    <div class="card section-card">
+        <div class="section-header">
+            <h3>
+                <i class="bi bi-info-circle"></i>
+                Подробная информация
+            </h3>
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <ul class="info-list">
+                        <li class="info-list-item">
+                            <i class="bi bi-person-hearts"></i>
+                            <div>
+                                <strong>Семейное положение:</strong>
+                                {{ profile.get_marital_status_display }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-people"></i>
+                            <div>
+                                <strong>Дети:</strong>
+                                {{ profile.get_children_display }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-rulers"></i>
+                            <div>
+                                <strong>Рост:</strong>
+                                {{ profile.height }} см
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-mortarboard"></i>
+                            <div>
+                                <strong>Образование:</strong>
+                                {{ profile.education }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-briefcase"></i>
+                            <div>
+                                <strong>Профессия:</strong>
+                                {{ profile.occupation }}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <ul class="info-list">
+                        <li class="info-list-item">
+                            <i class="bi bi-church"></i>
+                            <div>
+                                <strong>Степень воцерковленности:</strong>
+                                {{ profile.get_churching_level_display }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <div>
+                                <strong>Отношение к постам:</strong>
+                                {{ profile.get_attitude_to_fasting_display }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-cup"></i>
+                            <div>
+                                <strong>Участие в Таинствах:</strong>
+                                {{ profile.get_sacraments_display }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-star"></i>
+                            <div>
+                                <strong>Любимые святые:</strong>
+                                {{ profile.favorite_saints }}
+                            </div>
+                        </li>
+                        <li class="info-list-item">
+                            <i class="bi bi-book"></i>
+                            <div>
+                                <strong>Любимые духовные книги:</strong>
+                                {{ profile.spiritual_books }}
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна для просмотра фото -->
+{% for photo in profile.photos.all %}
+<div class="modal fade photo-modal" id="photoModal{{ photo.id }}" tabindex="-1" aria-labelledby="photoModalLabel{{ photo.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Закрыть" style="z-index: 1050;"></button>
+                <img src="{{ photo.image.url }}" class="img-fluid w-100" alt="Фото в полном размере">
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

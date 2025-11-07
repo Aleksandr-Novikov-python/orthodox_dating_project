@@ -1,0 +1,496 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}Мои уведомления{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notifications-header {
+        color: #d1a00d;
+        margin-bottom: 2rem;
+        font-weight: 600;
+    }
+
+    .notifications-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 0 1rem;
+    }
+
+    .notification-item {
+        background: #ffffff;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        overflow: hidden;
+    }
+
+    .notification-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #d1a00d;
+    }
+
+    .notification-item.unread {
+        background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+        border-left: 4px solid #d1a00d;
+    }
+
+    .notification-content {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        position: relative;
+    }
+
+    /* Контейнер для аватара с бейджем типа */
+    .notification-avatar-container {
+        position: relative;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .notification-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e9ecef;
+    }
+
+    /* Иконка типа уведомления на аватаре */
+    .notification-type-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .notification-type-badge.like {
+        background: linear-gradient(135deg, #ff6b6b, #ff8787);
+    }
+
+    .notification-type-badge.message {
+        background: linear-gradient(135deg, #4dabf7, #74c0fc);
+    }
+
+    .notification-type-badge.admin {
+        background: linear-gradient(135deg, #ffd43b, #ffe066);
+    }
+
+    .notification-type-badge.system {
+        background: linear-gradient(135deg, #868e96, #adb5bd);
+    }
+
+    .notification-type-badge.complaint {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    }
+
+    /* Иконка для уведомлений без аватара */
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        font-size: 1.5rem;
+    }
+
+    .notification-icon.like {
+        background: linear-gradient(135deg, #ff6b9d 0%, #c86dd7 100%);
+        color: white;
+    }
+
+    .notification-icon.message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .notification-icon.admin {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .notification-icon.complaint {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .notification-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notification-message {
+        margin: 0 0 0.25rem 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .notification-item.unread .notification-message {
+        font-weight: 600;
+    }
+
+    .notification-time {
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-time i {
+        margin-right: 0.25rem;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: #d1a00d;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin: 2rem 0;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #d1a00d;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state h3 {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .btn-action {
+        background-color: #d1a00d;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+    }
+
+    .btn-action:hover {
+        background-color: #b88d0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+
+    .date-divider {
+        padding: 0.5rem 1rem;
+        margin: 1.5rem 0 1rem 0;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 768px) {
+        .notifications-actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.5rem;
+        }
+
+        .notification-avatar,
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .notification-type-badge {
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Заголовок -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="notifications-header mb-0">
+            <i class="bi bi-bell"></i> Мои уведомления
+        </h1>
+        {% if notifications %}
+        <span class="badge bg-primary rounded-pill">
+            {{ notifications|length }}
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Действия -->
+    {% if notifications %}
+    <div class="notifications-actions">
+        <div class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            Непрочитанных: <strong>{{ unread_count }}</strong>
+        </div>
+        <div>
+            <button class="btn btn-action btn-sm" id="mark-all-read">
+                <i class="bi bi-check2-all"></i> Отметить все прочитанными
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Список уведомлений -->
+    <div class="notifications-list">
+        {% if notifications %}
+            {% regroup notifications by created_at|date:"Y-m-d" as notifications_by_date %}
+
+            {% for date_group in notifications_by_date %}
+                <!-- Разделитель по датам -->
+                <div class="date-divider">
+                    {% if date_group.grouper == today %}
+                        <i class="bi bi-calendar-day"></i> Сегодня
+                    {% elif date_group.grouper == yesterday %}
+                        <i class="bi bi-calendar-minus"></i> Вчера
+                    {% else %}
+                        <i class="bi bi-calendar"></i> {{ date_group.list.0.created_at|date:"d E Y" }}
+                    {% endif %}
+                </div>
+
+                {% for notification in date_group.list %}
+                <a href="{{ notification.link }}"
+                   class="notification-item {% if not notification.is_read %}unread{% endif %}"
+                   data-id="{{ notification.id }}">
+                    <div class="notification-content">
+                        
+                        <!-- ИСПРАВЛЕННАЯ ЧАСТЬ: Аватар с правильной обработкой -->
+                        {% if notification.sender and notification.sender.userprofile %}
+                            <!-- Если есть sender с профилем - показываем аватар -->
+                            <div class="notification-avatar-container">
+                                {% if notification.sender.userprofile.photo %}
+                                    <img src="{{ notification.sender.userprofile.photo.url }}"
+                                         alt="{{ notification.sender.first_name|default:notification.sender.username }}"
+                                         class="notification-avatar"
+                                         loading="lazy"
+                                         onerror="this.src='{% static 'img/default-avatar.png' %}'">
+                                {% else %}
+                                    <img src="{% static 'img/default-avatar.png' %}"
+                                         alt="{{ notification.sender.first_name|default:notification.sender.username }}"
+                                         class="notification-avatar"
+                                         loading="lazy">
+                                {% endif %}
+                                
+                                <!-- Иконка типа на аватаре -->
+                                <span class="notification-type-badge {{ notification.notification_type|lower }}">
+                                    {% if notification.notification_type == 'LIKE' %}
+                                        ❤️
+                                    {% elif notification.notification_type == 'MESSAGE' %}
+                                        💬
+                                    {% elif notification.notification_type == 'COMPLAINT_STATUS' %}
+                                        ⚠️
+                                    {% else %}
+                                        🔔
+                                    {% endif %}
+                                </span>
+                            </div>
+                        
+                        {% elif notification.notification_type == 'LIKE' %}
+                            <!-- Если нет sender - показываем только иконку -->
+                            <div class="notification-icon like">
+                                <i class="bi bi-heart-fill"></i>
+                            </div>
+                        
+                        {% elif notification.notification_type == 'MESSAGE' %}
+                            <div class="notification-icon message">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
+                        
+                        {% elif notification.notification_type == 'COMPLAINT_STATUS' %}
+                            <!-- Для уведомлений о жалобах от админа -->
+                            <div class="notification-icon complaint">
+                                <i class="bi bi-shield-fill-exclamation"></i>
+                            </div>
+                        
+                        {% elif notification.notification_type == 'ADMIN' %}
+                            <!-- Для админских уведомлений -->
+                            <div class="notification-icon admin">
+                                <i class="bi bi-shield-fill-check"></i>
+                            </div>
+                        
+                        {% else %}
+                            <!-- Для системных уведомлений -->
+                            <div class="notification-avatar-container">
+                                <img src="{% static 'img/default-avatar.png' %}"
+                                     alt="Уведомление"
+                                     class="notification-avatar"
+                                     loading="lazy">
+                                <span class="notification-type-badge system">
+                                    🔔
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        <!-- Содержание -->
+                        <div class="notification-body">
+                            <p class="notification-message">
+                                {% if notification.sender %}
+                                    <strong>{{ notification.sender.first_name|default:notification.sender.username }}</strong>
+                                {% elif notification.notification_type == 'COMPLAINT_STATUS' %}
+                                    <strong>Администрация</strong>
+                                {% elif notification.notification_type == 'ADMIN' %}
+                                    <strong>Администрация сайта</strong>
+                                {% else %}
+                                    <strong>Система</strong>
+                                {% endif %}
+                            </p>
+                            <div class="debug-info text-muted small">
+                                ID: {{ notification.id }} | Target: {{ notification.target_id }} | {{ notification.created_at }}
+                            </div>
+                            <p class="notification-message">
+                                {{ notification.message }}
+                            </p>
+                            <div class="notification-time">
+                                <i class="bi bi-clock"></i>
+                                {{ notification.created_at|timesince }} назад
+                            </div>
+                        </div>
+
+                        <!-- Бейдж "новое" -->
+                        {% if not notification.is_read %}
+                        <span class="notification-badge">Новое</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            {% endfor %}
+
+        {% else %}
+            <!-- Пустое состояние -->
+            <div class="empty-state">
+                <i class="bi bi-bell-slash"></i>
+                <h3>У вас пока нет уведомлений</h3>
+                <p class="text-muted mb-4">
+                    Когда кто-то проявит к вам симпатию или напишет сообщение,<br>
+                    вы увидите уведомление здесь.
+                </p>
+                <a href="{% url 'profiles:profile_list' %}" class="btn btn-action">
+                    <i class="bi bi-search"></i> Смотреть анкеты
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', () => {
+    const markAllBtn = document.getElementById('mark-all-read');
+    if (!markAllBtn) return;
+
+    markAllBtn.addEventListener('click', async function () {
+        if (!confirm('Отметить все уведомления как прочитанные?')) return;
+
+        try {
+            const response = await fetch('/notifications/mark-all-read/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+
+            if (!response.ok) throw new Error(`Ошибка запроса: ${response.status}`);
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Ответ не является JSON');
+            }
+
+            const data = await response.json();
+
+            // Обновление UI
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                item.classList.remove('unread');
+                item.querySelector('.notification-badge')?.remove();
+            });
+
+            const unreadLabel = document.querySelector('.notifications-actions .text-muted strong');
+            if (unreadLabel) unreadLabel.textContent = '0';
+
+            showToast(data.updated > 0
+                ? `Обновлено уведомлений: ${data.updated}`
+                : 'Нет новых уведомлений для обновления');
+
+            this.remove(); // Удалить кнопку после успешной обработки
+        } catch (error) {
+            console.error('Ошибка при отметке уведомлений:', error);
+            showToast('Ошибка при обновлении уведомлений');
+        }
+    });
+
+    // Визуальный отклик при клике на уведомление
+    document.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', () => {
+            item.style.opacity = '0.6';
+        });
+    });
+});
+
+// Получение CSRF-токена из cookie
+function getCSRFToken() {
+    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+    return cookie ? cookie.split('=')[1] : '';
+}
+
+// Всплывающее сообщение
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'position-fixed bottom-0 end-0 p-3';
+    toast.style.zIndex = '1055';
+    toast.innerHTML = `
+        <div class="toast show bg-success text-white rounded shadow-sm" role="alert">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i> ${message}
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,325 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .post-container {
+        min-height: 70vh;
+        background-color: #e9d884;
+        padding: 2rem 0;
+    }
+
+    .post-card {
+        background-color: #fffbe6;
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .post-title {
+        color: #614a04;
+        font-weight: 600;
+    }
+
+    .post-content {
+        font-size: 1.1rem;
+        line-height: 1.7;
+    }
+
+    .post-content p {
+        margin-bottom: 1rem;
+    }
+
+    .btn-submit-comment {
+        background-color: #d1a00d;
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 20px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit-comment:hover {
+        background-color: #b88d0b;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+
+    .alert-auth {
+        font-size: 1.1rem;
+        background-color: #e9d884;
+        color: #0c0d0b;
+        border: none;
+        border-radius: 8px;
+    }
+
+    @keyframes highlight {
+        0%, 100% { background-color: transparent; }
+        50% { background-color: #fff9e6; }
+    }
+
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="post-container">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9 mx-auto">
+
+                <!-- СТАТЬЯ -->
+                <article class="card post-card shadow-lg">
+                    <div class="card-body p-4">
+                        <h1 class="card-title post-title mb-3">{{ post.title }}</h1>
+                        <p class="text-muted mb-4 fst-italic">
+                            <i class="bi bi-person-circle"></i> {{ post.author.first_name|default:post.author.username }}
+                            &nbsp;|&nbsp;
+                            <i class="bi bi-calendar-event"></i> {{ post.created_at|date:"d.m.Y в H:i" }}
+                        </p>
+                        <hr>
+                        <div class="post-content mt-4">
+                            {{ post.content|linebreaks }}
+                        </div>
+                    </div>
+                </article>
+
+                <!-- КОММЕНТАРИИ -->
+                <section class="card post-card shadow-lg">
+                    <div class="card-body p-4">
+                        <h2 class="post-title mb-4">
+                            <i class="bi bi-chat-dots"></i>
+                            <span id="comment-count">{{ comments.count }}</span>
+                            комментари<span id="comment-plural">{{ comments.count|pluralize:"й,я,ев" }}</span>
+                        </h2>
+
+                        <!-- Список комментариев -->
+                        <div id="comments-list">
+                            {% for comment in comments %}
+                                {% include "profiles/includes/comment_item.html" with comment=comment %}
+                            {% empty %}
+                                <p class="fst-italic text-muted" id="no-comments-msg">
+                                    Комментариев пока нет. Будьте первым!
+                                </p>
+                            {% endfor %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- ФОРМА ДОБАВЛЕНИЯ КОММЕНТАРИЯ -->
+                        <h3 class="post-title mt-4">Оставить комментарий</h3>
+
+                        {% if user.is_authenticated %}
+                            <form method="post" id="comment-form" class="mt-3">
+                                {% csrf_token %}
+                                {{ comment_form|crispy }}
+
+                                <div id="form-error" class="alert alert-danger d-none" role="alert"></div>
+
+                                <button type="submit" class="btn btn-submit-comment shadow-sm mt-2" id="submit-btn">
+                                    <i class="bi bi-chat-dots"></i> Отправить на модерацию
+                                </button>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-auth shadow-sm mt-3" role="alert">
+                                Пожалуйста,
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link fw-bold">войдите</a>
+                                или
+                                <a href="{% url 'profiles:register' %}" class="alert-link fw-bold">зарегистрируйтесь</a>,
+                                чтобы оставить комментарий.
+                            </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+// ==============================================================================
+// CSRF TOKEN
+// ==============================================================================
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+// ==============================================================================
+// DEBOUNCE HELPER
+// ==============================================================================
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ==============================================================================
+// ОБРАБОТКА ЛАЙКОВ/ДИЗЛАЙКОВ
+// ==============================================================================
+function handleReaction(commentId, action) {
+    const url = `{% url 'profiles:like_comment' comment_id=0 %}`.replace('0', commentId);
+    const endpoint = action === 'like' ? url : url.replace('like', 'dislike');
+
+    fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сервера');
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById(`like-count-${commentId}`).textContent = data.likes;
+        document.getElementById(`dislike-count-${commentId}`).textContent = data.dislikes;
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+        alert('Не удалось обработать реакцию. Попробуйте позже.');
+    });
+}
+
+const debouncedLike = debounce(handleReaction, 300);
+
+// ==============================================================================
+// ИНИЦИАЛИЗАЦИЯ ДЕЙСТВИЙ НАД КОММЕНТАРИЯМИ
+// ==============================================================================
+function initCommentActions(context = document) {
+    // Лайки
+    context.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.id;
+            debouncedLike(commentId, 'like');
+        });
+    });
+
+    // Дизлайки
+    context.querySelectorAll('.dislike-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.id;
+            debouncedLike(commentId, 'dislike');
+        });
+    });
+
+    // Кнопки ответа
+    context.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.id;
+            const form = document.getElementById(`reply-form-${commentId}`);
+            if (form) {
+                form.classList.toggle('d-none');
+            }
+        });
+    });
+}
+
+// ==============================================================================
+// ОТПРАВКА КОММЕНТАРИЯ
+// ==============================================================================
+function initCommentForm() {
+    const form = document.getElementById('comment-form');
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submit-btn');
+        const formError = document.getElementById('form-error');
+        const formData = new FormData(form);
+
+        // Блокируем кнопку
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Отправка...';
+        if (formError) {
+            formError.classList.add('d-none');
+        }
+
+        fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Ответ не в формате JSON');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Очищаем форму
+                form.reset();
+                // Показываем сообщение
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success mt-3';
+                successMsg.textContent = 'Комментарий отправлен на модерацию и появится после проверки.';
+                form.insertAdjacentElement('afterend', successMsg);
+
+                    setTimeout(() => successMsg.remove(), 5000);
+            } else {
+                throw new Error(data.error || 'Не удалось добавить комментарий');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            formError.textContent = error.message || 'Произошла ошибка при отправке комментария';
+            formError.classList.remove('d-none');
+        })
+        .finally(() => {
+            // Разблокируем кнопку
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = '<i class="bi bi-chat-dots"></i> Отправить на модерацию';
+        });
+    });
+}
+
+// ==============================================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ==============================================================================
+document.addEventListener('DOMContentLoaded', function() {
+    initCommentActions();
+    initCommentForm();
+});
+</script>
+{% endblock %}

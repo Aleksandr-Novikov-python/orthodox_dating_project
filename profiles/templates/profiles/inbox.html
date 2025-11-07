@@ -1,0 +1,257 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}Мои сообщения{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inbox-header {
+        color: #d1a00d;
+        font-weight: 600;
+        margin-bottom: 2rem;
+    }
+    
+    .inbox-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .conversation-item {
+        background-color: #fff;
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    
+    .conversation-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: #d1a00d;
+        background-color: #fffef8;
+    }
+    
+    .conversation-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 3px solid #f8f9fa;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .conversation-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .conversation-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #333;
+    }
+    
+    .conversation-preview {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .conversation-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+    
+    .conversation-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .unread-badge {
+        background-color: #d1a00d;
+        color: white;
+        border-radius: 12px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .online-indicator {
+        width: 12px;
+        height: 12px;
+        background-color: #28a745;
+        border-radius: 50%;
+        display: inline-block;
+        border: 2px solid white;
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+    }
+    
+    .avatar-wrapper {
+        position: relative;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #fff9e6 0%, #fffef8 100%);
+        border-radius: 12px;
+        margin: 2rem 0;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #d1a00d;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+    
+    .btn-browse {
+        background-color: #d1a00d;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-browse:hover {
+        background-color: #b88d0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .conversation-avatar {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .conversation-name {
+            font-size: 1rem;
+        }
+        
+        .conversation-meta {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="inbox-container">
+        <!-- Заголовок -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="inbox-header mb-0">
+                <i class="bi bi-chat-dots"></i> Мои сообщения
+            </h1>
+            {% if interlocutors %}
+            <span class="badge bg-primary rounded-pill">
+                {{ interlocutors|length }}
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Список диалогов -->
+        {% if interlocutors %}
+            <div class="conversations-list">
+                {% for person in interlocutors %}
+                <a href="{% url 'profiles:conversation_detail' pk=person.pk %}" 
+                   class="conversation-item">
+                    <!-- Аватар -->
+                    <div class="avatar-wrapper">
+                        {% if person.userprofile.photo %}
+                            <img src="{{ person.userprofile.photo.url }}" 
+                                 alt="{{ person.first_name|default:person.username }}"
+                                 class="conversation-avatar"
+                                 loading="lazy">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" 
+                                 alt="Аватар по умолчанию"
+                                 class="conversation-avatar"
+                                 loading="lazy">
+                        {% endif %}
+                        
+                        <!-- Индикатор онлайн -->
+                        {% if person.userprofile.is_online %}
+                        <span class="online-indicator" title="Онлайн"></span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Информация о диалоге -->
+                    <div class="conversation-info">
+                        <h6 class="conversation-name">
+                            {{ person.first_name|default:person.username }}
+                            {% if person.userprofile.is_verified %}
+                                <i class="bi bi-patch-check-fill text-primary" 
+                                   title="Верифицирован"></i>
+                            {% endif %}
+                        </h6>
+                        <p class="conversation-preview">
+                            <i class="bi bi-chat-text"></i>
+                            Перейти к диалогу...
+                        </p>
+                    </div>
+
+                    <!-- Метаинформация -->
+                    <div class="conversation-meta">
+                        <!-- Можно добавить время последнего сообщения -->
+                        {% comment %}
+                        <span class="conversation-time">
+                            {{ person.last_message_time|timesince }} назад
+                        </span>
+                        {% endcomment %}
+                        
+                        <!-- Бейдж непрочитанных (если есть) -->
+                        {% comment %}
+                        {% if person.unread_count %}
+                        <span class="unread-badge">
+                            {{ person.unread_count }}
+                        </span>
+                        {% endif %}
+                        {% endcomment %}
+                        
+                        <!-- Иконка перехода -->
+                        <i class="bi bi-chevron-right text-muted"></i>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            <!-- Пустое состояние -->
+            <div class="empty-state">
+                <i class="bi bi-chat-heart"></i>
+                <h3>У вас пока нет диалогов</h3>
+                <p class="text-muted mb-4">
+                    Выразите кому-нибудь симпатию, чтобы начать общение.<br>
+                    При взаимной симпатии вы сможете обмениваться сообщениями!
+                </p>
+                <a href="{% url 'profiles:profile_list' %}" class="btn btn-browse">
+                    <i class="bi bi-search"></i> Смотреть анкеты
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

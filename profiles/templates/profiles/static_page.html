@@ -1,0 +1,520 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер страницы */
+    .static-page-container {
+        padding: 40px 20px 60px;
+        min-height: 70vh;
+    }
+
+    /* Карточка контента */
+    .static-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #e9d884;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .static-card-body {
+        padding: 50px 40px;
+    }
+
+    /* Заголовок страницы */
+    .static-page-title {
+        color: #614a04ff;
+        font-weight: 800;
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+        padding-bottom: 20px;
+    }
+
+    .static-page-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #d1a00dff, transparent);
+        border-radius: 2px;
+    }
+
+    /* Иконка заголовка */
+    .title-icon {
+        color: #d1a00dff;
+        font-size: 2.5rem;
+        margin-right: 15px;
+        vertical-align: middle;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-5px);
+        }
+    }
+
+    /* Контент */
+    .static-content {
+        line-height: 1.8;
+        color: #495057;
+        font-size: 1.05rem;
+    }
+
+    /* Заголовки внутри контента */
+    .static-content h1 {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 2rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #d1a00dff;
+    }
+
+    .static-content h2 {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 1.7rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-left: 15px;
+        border-left: 4px solid #d1a00dff;
+    }
+
+    .static-content h3 {
+        color: #775c04ff;
+        font-weight: 600;
+        font-size: 1.4rem;
+        margin-top: 1.8rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .static-content h4 {
+        color: #856404;
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    /* Параграфы */
+    .static-content p {
+        margin-bottom: 1.2rem;
+        text-align: justify;
+    }
+
+    /* Списки */
+    .static-content ul,
+    .static-content ol {
+        padding-left: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .static-content ul li,
+    .static-content ol li {
+        margin-bottom: 0.8rem;
+        line-height: 1.7;
+        position: relative;
+    }
+
+    .static-content ul li::marker {
+        color: #d1a00dff;
+        font-size: 1.2em;
+    }
+
+    .static-content ol li::marker {
+        color: #d1a00dff;
+        font-weight: 600;
+    }
+
+    /* Вложенные списки */
+    .static-content ul ul,
+    .static-content ol ul,
+    .static-content ul ol,
+    .static-content ol ol {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Ссылки */
+    .static-content a {
+        color: #d1a00dff;
+        text-decoration: none;
+        font-weight: 600;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .static-content a:hover {
+        color: #b88f0b;
+        border-bottom-color: #d1a00dff;
+    }
+
+    /* Цитаты */
+    .static-content blockquote {
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-left: 5px solid #d1a00dff;
+        padding: 20px 25px;
+        margin: 25px 0;
+        border-radius: 0 10px 10px 0;
+        font-style: italic;
+        color: #614a04ff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .static-content blockquote p:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Код */
+    .static-content code {
+        background-color: #f8f9fa;
+        color: #d63384;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+
+    .static-content pre {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        overflow-x: auto;
+        margin: 20px 0;
+    }
+
+    .static-content pre code {
+        background: none;
+        padding: 0;
+        color: #212529;
+    }
+
+    /* Таблицы */
+    .static-content table {
+        width: 100%;
+        margin: 25px 0;
+        border-collapse: collapse;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .static-content table thead {
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        color: #614a04ff;
+        font-weight: 600;
+    }
+
+    .static-content table th,
+    .static-content table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .static-content table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .static-content table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Изображения */
+    .static-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin: 20px 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .static-content img:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Горизонтальная линия */
+    .static-content hr {
+        border: none;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #d1a00dff, transparent);
+        margin: 35px 0;
+    }
+
+    /* Выделение текста */
+    .static-content strong,
+    .static-content b {
+        color: #614a04ff;
+        font-weight: 700;
+    }
+
+    .static-content em,
+    .static-content i {
+        color: #775c04ff;
+    }
+
+    /* Важные блоки (если используются классы) */
+    .static-content .alert {
+        border-radius: 10px;
+        padding: 20px;
+        margin: 25px 0;
+        border-left: 4px solid;
+    }
+
+    .static-content .alert-info {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        border-left-color: #17a2b8;
+        color: #0c5460;
+    }
+
+    .static-content .alert-warning {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border-left-color: #ffc107;
+        color: #856404;
+    }
+
+    .static-content .alert-danger {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border-left-color: #dc3545;
+        color: #721c24;
+    }
+
+    .static-content .alert-success {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-left-color: #28a745;
+        color: #155724;
+    }
+
+    /* Кнопка "Наверх" */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        color: #614a04ff;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .back-to-top.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .back-to-top:hover {
+        background: linear-gradient(135deg, #b88f0b 0%, #d1a00dff 100%);
+        color: #fff;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Прогресс чтения */
+    .reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 4px;
+        background: linear-gradient(90deg, #d1a00dff, #f4f1bb);
+        z-index: 1001;
+        transition: width 0.1s ease;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .static-card-body {
+            padding: 30px 20px;
+        }
+
+        .static-page-title {
+            font-size: 1.8rem;
+        }
+
+        .title-icon {
+            font-size: 1.8rem;
+        }
+
+        .static-content {
+            font-size: 1rem;
+        }
+
+        .static-content h1 {
+            font-size: 1.6rem;
+        }
+
+        .static-content h2 {
+            font-size: 1.4rem;
+        }
+
+        .static-content h3 {
+            font-size: 1.2rem;
+        }
+
+        .back-to-top {
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Прогресс-бар чтения -->
+<div class="reading-progress" id="readingProgress"></div>
+
+<div class="static-page-container">
+    <div class="row justify-content-center">
+        <div class="col-md-11 col-lg-9">
+            <div class="card static-card border-0">
+                <div class="card-body static-card-body">
+                    <!-- Заголовок с иконкой -->
+                    <h1 class="static-page-title">
+                        {% if 'правил' in page.title|lower %}
+                            <i class="bi bi-shield-check title-icon"></i>
+                        {% elif 'о нас' in page.title|lower or 'о сайте' in page.title|lower %}
+                            <i class="bi bi-info-circle title-icon"></i>
+                        {% elif 'контакт' in page.title|lower %}
+                            <i class="bi bi-envelope title-icon"></i>
+                        {% elif 'помощ' in page.title|lower %}
+                            <i class="bi bi-question-circle title-icon"></i>
+                        {% else %}
+                            <i class="bi bi-file-text title-icon"></i>
+                        {% endif %}
+                        {{ page.title }}
+                    </h1>
+
+                    <!-- Контент страницы -->
+                    <div class="static-content">
+                        {{ page.content|safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка возврата -->
+            <div class="text-center mt-4">
+                <a href="{% url 'profiles:home' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Вернуться на главную
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Кнопка "Наверх" -->
+<div class="back-to-top" id="backToTop" title="Наверх">
+    <i class="bi bi-arrow-up-short" style="font-size: 1.8rem;"></i>
+</div>
+
+<!-- JavaScript для интерактивности -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const backToTop = document.getElementById('backToTop');
+    const readingProgress = document.getElementById('readingProgress');
+
+    // Показ/скрытие кнопки "Наверх" и обновление прогресса
+    window.addEventListener('scroll', () => {
+        // Кнопка "Наверх"
+        if (window.pageYOffset > 300) {
+            backToTop.classList.add('show');
+        } else {
+            backToTop.classList.remove('show');
+        }
+
+        // Прогресс чтения
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+        readingProgress.style.width = scrollPercent + '%';
+    });
+
+    // Клик по кнопке "Наверх"
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    // Плавная прокрутка для якорных ссылок
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href !== '#' && href !== '') {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+
+    // Анимация появления элементов при прокрутке (опционально)
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    // Наблюдаем за заголовками и параграфами
+    document.querySelectorAll('.static-content h2, .static-content h3, .static-content p, .static-content ul, .static-content ol').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

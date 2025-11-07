@@ -1,0 +1,566 @@
+{% extends 'profiles/base.html' %}
+{% load static %}
+{% block title %}Православный календарь{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер календаря */
+    .calendar-container {
+        padding: 40px 20px 60px;
+        min-height: 75vh;
+    }
+
+    /* Заголовок */
+    .calendar-header {
+        color: #614a04ff;
+        font-weight: 800;
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 15px;
+        animation: fadeInDown 0.6s ease;
+        position: relative;
+        display: inline-block;
+    }
+
+    .calendar-header::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #d1a00dff, transparent);
+        border-radius: 2px;
+    }
+
+    .calendar-icon {
+        color: #d1a00dff;
+        margin-right: 10px;
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Панель управления */
+    .controls-panel {
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.6s ease 0.3s both;
+    }
+
+    .calendar-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Поле выбора даты */
+    .date-input {
+        max-width: 200px;
+        border: 2px solid #d1a00dff;
+        border-radius: 10px;
+        padding: 10px 15px;
+        font-weight: 600;
+        color: #614a04ff;
+        transition: all 0.3s ease;
+    }
+
+    .date-input:focus {
+        border-color: #b88f0b;
+        box-shadow: 0 0 0 0.25rem rgba(209, 160, 13, 0.25);
+        transform: scale(1.02);
+    }
+
+    /* Кнопки */
+    .btn-calendar {
+        border: 2px solid #d1a00dff;
+        background: #ffffff;
+        color: #614a04ff;
+        border-radius: 10px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-calendar:hover {
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        color: #614a04ff;
+        border-color: #b88f0b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+
+    .btn-today {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: #fff;
+        border: none;
+    }
+
+    .btn-today:hover {
+        background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+    }
+
+    /* Карточка праздника */
+    .holiday-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 3px solid #e9d884;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.6s ease 0.5s both;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .holiday-card-header {
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        padding: 30px;
+        text-align: center;
+        border-bottom: 3px solid #b88f0b;
+    }
+
+    .holiday-icon {
+        font-size: 4rem;
+        color: #614a04ff;
+        margin-bottom: 15px;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .holiday-title {
+        color: #614a04ff;
+        font-weight: 800;
+        font-size: 2rem;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .holiday-date {
+        color: #6c757d;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .holiday-card-body {
+        padding: 35px;
+    }
+
+    /* Информация о празднике */
+    .holiday-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .info-item {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        border: 2px solid #e9d884;
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        border-color: #d1a00dff;
+    }
+
+    .info-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .info-value {
+        color: #614a04ff;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    /* Бейджи */
+    .holiday-badges {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 25px;
+    }
+
+    .badge-custom {
+        padding: 12px 25px;
+        font-size: 1rem;
+        font-weight: 700;
+        border-radius: 25px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    .badge-fast {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: #fff;
+    }
+
+    .badge-no-fast {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: #fff;
+    }
+
+    .badge-type {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: #fff;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    /* Дополнительная информация */
+    .additional-info {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border-left: 4px solid #2196f3;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 25px;
+    }
+
+    .additional-info-title {
+        color: #1976d2;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .additional-info-text {
+        color: #424242;
+        line-height: 1.7;
+        margin: 0;
+    }
+
+    /* Анимации */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .calendar-header {
+            font-size: 1.8rem;
+        }
+
+        .controls-panel {
+            padding: 20px 15px;
+        }
+
+        .calendar-controls {
+            flex-direction: column;
+        }
+
+        .date-input,
+        .btn-calendar {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .holiday-card-header {
+            padding: 25px 20px;
+        }
+
+        .holiday-title {
+            font-size: 1.5rem;
+        }
+
+        .holiday-icon {
+            font-size: 3rem;
+        }
+
+        .holiday-info {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container calendar-container">
+    <!-- Заголовок -->
+    <div class="text-center mb-4">
+        <h1 class="calendar-header">
+            <i class="bi bi-calendar-event calendar-icon"></i>
+            Православный календарь
+        </h1>
+    </div>
+
+    <!-- Панель управления -->
+    <div class="controls-panel">
+        <div class="calendar-controls">
+            <input type="date"
+                   id="calendar-date"
+                   class="form-control date-input"
+                   value="{{ selected_date }}"
+                   aria-label="Выбрать дату">
+
+            <button id="today-btn" class="btn btn-today">
+                <i class="bi bi-calendar-check"></i> Сегодня
+            </button>
+
+            <button id="prev-month" class="btn btn-calendar">
+                <i class="bi bi-chevron-left"></i> Предыдущий месяц
+            </button>
+
+            <button id="next-month" class="btn btn-calendar">
+                Следующий месяц <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Карточка праздника -->
+    <div class="holiday-card">
+        <!-- Заголовок -->
+        <div class="holiday-card-header">
+            <div class="holiday-icon">
+                {% if holiday.fast %}
+                    <i class="bi bi-hearts"></i>
+                {% else %}
+                    <i class="bi bi-sun-fill"></i>
+                {% endif %}
+            </div>
+            <h2 class="holiday-title">{{ holiday.title }}</h2>
+            <p class="holiday-date">
+                <i class="bi bi-calendar3"></i>
+                {{ selected_date|date:"d E Y" }}
+            </p>
+        </div>
+
+        <!-- Тело карточки -->
+        <div class="holiday-card-body">
+            <!-- Информация -->
+            <div class="holiday-info">
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-egg-fill"></i> Икона праздника
+                    </div>
+                    <div class="info-value">
+                        {% if holiday.icon %}
+                            <img src="{% static 'icons-calendar/' %}{{ holiday.icon }}" alt="Иконка праздника" class="img-fluid" style="max-height: 300px;">
+                        {% else %}
+                            <span class="text-muted">Нет иконки</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+            {% if holiday.kanons_and_tropar %}
+                <div class="info-item">
+                    <div class="info-label">
+                        <i class="bi bi-music-note-beamed"></i> Каноны и тропари
+                    </div>
+                    <div class="info-value text-break small">
+                        {% if holiday.kanons_and_tropar.tropar %}
+                            <strong>Тропарь:</strong> {{ holiday.kanons_and_tropar.tropar }}<br>
+                        {% endif %}
+                        {% if holiday.kanons_and_tropar.kontakion %}
+                            <strong>Кондак:</strong> {{ holiday.kanons_and_tropar.kontakion }}<br>
+                        {% endif %}
+                        {% if holiday.kanons_and_tropar.kanon %}
+                            <strong>Канон:</strong> {{ holiday.kanons_and_tropar.kanon }}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            </div>
+
+            <!-- Бейджи -->
+            <div class="holiday-badges">
+                {% if holiday.fast %}
+                    <span class="badge-custom badge-fast">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Постный день
+                    </span>
+                {% else %}
+                    <span class="badge-custom badge-no-fast">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Без поста
+                    </span>
+                {% endif %}
+
+                <span class="badge-custom badge-type">
+                    <i class="bi bi-tag-fill"></i>
+                    {{ holiday.type }}
+                </span>
+            </div>
+
+            <!-- Дополнительная информация -->
+            <div class="additional-info">
+                <div class="additional-info-title">
+                    <i class="bi bi-info-circle-fill"></i>
+                    О празднике
+                </div>
+                <p class="additional-info-text">
+                    {% if holiday.description %}
+                        {{ holiday.description }}
+                    {% else %}
+                        В этот день Православная Церковь чтит память святых и празднует церковные события
+                        согласно традициям Украинской Православной Церкви.
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Ссылки на дополнительные ресурсы -->
+            <div class="text-center mt-4">
+                <a href="https://azbyka.org/days/"
+                   target="_blank"
+                   class="btn btn-calendar"
+                   rel="noopener noreferrer">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    Подробнее о сегодняшнем дне
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подсказка -->
+    <div class="text-center mt-4">
+        <p class="text-muted">
+            <i class="bi bi-lightbulb"></i>
+            <small>
+                Выберите дату в календаре,
+                чтобы узнать о церковных праздниках и постах
+            </small>
+        </p>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Обработчик изменения даты
+    $('#calendar-date').on('change', function() {
+        const selected = $(this).val();
+        if (selected) {
+            navigateToDate(selected);
+        }
+    });
+
+    // Кнопка "Сегодня"
+    $('#today-btn').on('click', function() {
+        const today = new Date().toISOString().split('T')[0];
+        navigateToDate(today);
+    });
+
+    // Функция для смены месяца
+    function shiftMonth(offset) {
+        const current = new Date($('#calendar-date').val() || new Date());
+        current.setMonth(current.getMonth() + offset);
+        const shifted = current.toISOString().split('T')[0];
+        navigateToDate(shifted);
+    }
+
+    // Кнопки навигации по месяцам
+    $('#prev-month').on('click', function() {
+        shiftMonth(-1);
+    });
+
+    $('#next-month').on('click', function() {
+        shiftMonth(1);
+    });
+
+    // Функция навигации с плавным переходом
+    function navigateToDate(date) {
+        // Добавляем анимацию загрузки
+        $('.holiday-card').css('opacity', '0.5');
+
+        // Переход на новую дату
+        window.location.href = `?date=${date}`;
+    }
+
+    //  Горячие клавиши
+    $(document).on('keydown', function(e) {
+        // Стрелка влево - предыдущий месяц
+        if (e.key === 'ArrowLeft' && e.ctrlKey) {
+            e.preventDefault();
+            shiftMonth(-1);
+        }
+        // Стрелка вправо - следующий месяц
+        else if (e.key === 'ArrowRight' && e.ctrlKey) {
+            e.preventDefault();
+            shiftMonth(1);
+        }
+        // T - сегодня
+        else if (e.key === 't' || e.key === 'T' || e.key === 'ั‚' || e.key === 'Рў') {
+            e.preventDefault();
+            $('#today-btn').click();
+        }
+    });
+
+    // Анимация при загрузке
+    setTimeout(function() {
+        $('.holiday-card').css('opacity', '1');
+    }, 100);
+
+    // Tooltip для горячих клавиш
+    // $('<div class="text-center mt-3 text-muted">' +
+    //   '<small>' +
+    //   '<i class="bi bi-keyboard"></i> ' +
+    //   'Горячие клавиши: <kbd>Ctrl + ←</kbd> / <kbd>Ctrl + →</kbd> для навигации, <kbd>T</kbd> для "Сегодня"' +
+    //   '</small>' +
+    //   '</div>').appendTo('.calendar-container');
+});
+</script>
+{% endblock %}

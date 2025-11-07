@@ -1,0 +1,451 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+<style>
+    /* Контейнер комментария */
+    .comment-wrapper {
+        background: #ffffff;
+        border: 2px solid #e9d884;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    .comment-wrapper:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Контент комментария */
+    .comment-content {
+        display: flex;
+        gap: 15px;
+        flex-direction: column;
+    }
+
+    /* Аватар */
+    .comment-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e9d884;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .comment-avatar:hover {
+        transform: scale(1.1);
+        border-color: #d1a00dff;
+    }
+
+    /* Тело комментария */
+    .comment-body {
+        flex: 1;
+    }
+
+    /* Заголовок комментария */
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .comment-author {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .comment-date {
+        color: #6c757d;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .comment-date i {
+        color: #d1a00dff;
+    }
+
+    /* Текст комментария */
+    .comment-text {
+        color: #495057;
+        line-height: 1.7;
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
+
+    /* Кнопки действий */
+    .comment-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+
+    /* Кнопки лайк/дизлайк */
+    .reaction-btn {
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        border-radius: 20px;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .like-btn {
+        color: #28a745;
+        border-color: #28a745;
+    }
+
+    .like-btn:hover {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .dislike-btn {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .dislike-btn:hover {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .reaction-count {
+        font-weight: 700;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    /* Кнопка ответа */
+    .reply-btn {
+        color: #d1a00dff;
+        background: transparent;
+        border: none;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .reply-btn:hover {
+        color: #b88f0b;
+        transform: translateX(5px);
+    }
+
+    /* Форма ответа */
+    .reply-form {
+        margin-top: 15px;
+        padding: 15px;
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-radius: 10px;
+        border: 2px solid #e9d884;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            max-height: 500px;
+            transform: translateY(0);
+        }
+    }
+
+    .btn-submit-reply {
+        background: linear-gradient(135deg, #d1a00dff 0%, #f4f1bb 100%);
+        color: #614a04ff;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit-reply:hover {
+        background: linear-gradient(135deg, #b88f0b 0%, #d1a00dff 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+
+    /* Вложенные ответы */
+    .replies-container {
+        margin-top: 20px;
+        margin-left: 40px;
+        border-left: 3px solid #e9d884;
+        padding-left: 20px;
+    }
+
+    .reply-item {
+        background: linear-gradient(135deg, #faf7d4 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #e9d884;
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+        animation: fadeInLeft 0.5s ease;
+    }
+
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .reply-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #d1a00dff;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .reply-body {
+        flex: 1;
+    }
+
+    .reply-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .reply-author {
+        color: #614a04ff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .reply-date {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+    .reply-text {
+        color: #495057;
+        line-height: 1.6;
+        font-size: 0.95rem;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .comment-avatar {
+            width: 50px;
+            height: 50px;
+        }
+
+        .replies-container {
+            margin-left: 20px;
+            padding-left: 15px;
+        }
+
+        .reply-avatar {
+            width: 40px;
+            height: 40px;
+        }
+
+        .comment-actions {
+            justify-content: flex-start;
+        }
+    }
+</style>
+
+<div class="comment-wrapper">
+    <div class="comment-content">
+        <!-- Аватар -->
+        <div>
+            {% if comment.author.userprofile.photo %}
+                <img src="{{ comment.author.userprofile.photo.url }}"
+                     alt="Аватар {{ comment.author.first_name }}"
+                     class="comment-avatar">
+            {% else %}
+                <img src="{% static 'img/default_avatar.png' %}"
+                     alt="Аватар по умолчанию"
+                     class="comment-avatar">
+            {% endif %}
+        </div>
+
+        <!-- Тело комментария -->
+        <div class="comment-body">
+            <!-- Заголовок -->
+            <div class="comment-header">
+                <span class="comment-author">{{ comment.author.first_name }}</span>
+                <span class="comment-date">
+                    <i class="bi bi-clock-fill"></i>
+                    {{ comment.created_at|date:"d.m.Y H:i" }}
+                </span>
+            </div>
+
+            <!-- Текст комментария -->
+            <div class="comment-text">
+                {{ comment.body|linebreaks }}
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="comment-actions">
+                <!-- Лайк -->
+                <button class="reaction-btn like-btn"
+                        data-id="{{ comment.id }}"
+                        data-url="{% url 'profiles:like_comment' comment.id %}"
+                        title="Мне нравится">
+                    <span style="font-size: 1.2rem;">👍</span>
+                    <span class="reaction-count" id="like-count-{{ comment.id }}">
+                        {{ comment.total_likes }}
+                    </span>
+                </button>
+
+                <!-- Дизлайк -->
+                <button class="reaction-btn dislike-btn"
+                        data-id="{{ comment.id }}"
+                        data-url="{% url 'profiles:dislike_comment' comment.id %}"
+                        title="Не нравится">
+                    <span style="font-size: 1.2rem;">👎</span>
+                    <span class="reaction-count" id="dislike-count-{{ comment.id }}">
+                        {{ comment.total_dislikes }}
+                    </span>
+                </button>
+
+                <!-- Кнопка ответить -->
+                {% if user.is_authenticated %}
+                    <button class="reply-btn"
+                            data-id="{{ comment.id }}"
+                            title="Ответить на комментарий">
+                        <i class="bi bi-reply-fill"></i>
+                        Ответить
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Форма ответа -->
+            {% if user.is_authenticated %}
+                <form method="post"
+                      class="reply-form d-none"
+                      id="reply-form-{{ comment.id }}">
+                    {% csrf_token %}
+                    {{ comment_form|crispy }}
+                    <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                    <button type="submit" class="btn btn-submit-reply">
+                        <i class="bi bi-send-fill"></i>
+                        Отправить ответ
+                    </button>
+                </form>
+            {% endif %}
+
+            <!-- Вложенные ответы -->
+            {% if comment.visible_replies %}
+                <div class="replies-container">
+                    {% for reply in comment.visible_replies %}
+                        <div class="reply-item">
+                            <!-- Аватар ответа -->
+                            <div>
+                                {% if reply.author.userprofile.photo %}
+                                    <img src="{{ reply.author.userprofile.photo.url }}"
+                                         alt="Аватар {{ reply.author.first_name }}"
+                                         class="reply-avatar">
+                                {% else %}
+                                    <img src="{% static 'img/default_avatar.png' %}"
+                                         alt="Аватар по умолчанию"
+                                         class="reply-avatar">
+                                {% endif %}
+                            </div>
+
+                            <!-- Тело ответа -->
+                            <div class="reply-body">
+                                <div class="reply-header">
+                                    <span class="reply-author">{{ reply.author.first_name }}</span>
+                                    <span class="reply-date">{{ reply.created_at|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <div class="reply-text">
+                                    {{ reply.body|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Обработка кнопки "Ответить"
+    document.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const commentId = e.currentTarget.dataset.id;
+            const form = document.getElementById(`reply-form-${commentId}`);
+
+            if (form) {
+                form.classList.toggle('d-none');
+                if (!form.classList.contains('d-none')) {
+                    const textarea = form.querySelector('textarea');
+                    if (textarea) textarea.focus();
+                }
+            }
+        });
+    });
+
+    // Анимация для кнопок лайк/дизлайк
+    document.querySelectorAll('.like-btn, .dislike-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
+    });
+});
+</script>

@@ -1,0 +1,491 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Основной контейнер */
+    .edit-profile-container {
+        padding: 30px 0;
+        min-height: 80vh;
+    }
+
+    /* Карточки */
+    .profile-card {
+        background-color: #ffffff;
+        border: 1px solid #e9d884;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Заголовки карточек */
+    .card-title-custom {
+        color: #614a04ff;
+        font-weight: 700;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #d1a00dff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Легенды fieldset */
+    .fieldset-legend {
+        color: #614a04ff;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 8px 15px;
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-left: 4px solid #d1a00dff;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    /* Кнопки */
+    .btn-save {
+        background-color: #d1a00dff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-save:hover {
+        background-color: #b88f0b;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(209, 160, 13, 0.3);
+    }
+
+    .btn-cancel {
+        background-color: #6c757d;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-upload {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-upload:hover {
+        background: linear-gradient(135deg, #218838 0%, #1aa179 100%);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    /* AI Helper блок */
+    .ai-helper-card {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: 2px solid #2196f3;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 8px rgba(33, 150, 243, 0.1);
+    }
+
+    .ai-helper-title {
+        color: #1976d2;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ai-helper-text {
+        color: #424242;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    .btn-generate {
+        background-color: #2196f3;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-generate:hover {
+        background-color: #1976d2;
+        color: #fff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+    }
+
+    .btn-generate:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Галерея фотографий */
+    .photo-gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .photo-gallery-item:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .photo-gallery-item img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .photo-gallery-item:hover img {
+        filter: brightness(0.9);
+    }
+
+    .btn-delete-photo {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        background-color: rgba(220, 53, 69, 0.9);
+        color: #fff;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        font-size: 18px;
+        line-height: 1;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-delete-photo:hover {
+        background-color: rgba(200, 35, 51, 1);
+        transform: rotate(90deg) scale(1.1);
+    }
+
+    /* Разделитель */
+    .custom-hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #d1a00dff, transparent);
+        margin: 25px 0;
+    }
+
+    /* Placeholder для пустой галереи */
+    .empty-gallery {
+        text-align: center;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, #f4f1bb 0%, #faf7d4 100%);
+        border-radius: 10px;
+        color: #6c757d;
+    }
+
+    .empty-gallery i {
+        font-size: 3rem;
+        color: #d1a00dff;
+        margin-bottom: 15px;
+    }
+
+    /* Анимация загрузки */
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .spinner-custom {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container edit-profile-container">
+    <div class="row">
+        <!-- КОЛОНКА 1: РЕДАКТИРОВАНИЕ ДАННЫХ ПРОФИЛЯ -->
+        <div class="col-lg-7 mb-4">
+            <div class="card profile-card">
+                <div class="card-body p-4">
+                    <h2 class="card-title-custom">
+                        <i class="bi bi-person-gear"></i>
+                        Редактирование профиля
+                    </h2>
+
+                    <!-- Основная форма для данных пользователя и профиля -->
+                    <form method="post" enctype="multipart/form-data" id="profile-update-form">
+                        {% csrf_token %}
+
+                        <fieldset class="mb-4">
+                            <legend class="fieldset-legend">
+                                <i class="bi bi-person-badge"></i> Основные данные
+                            </legend>
+                            {{ user_form|crispy }}
+                        </fieldset>
+
+                        <fieldset>
+                            <legend class="fieldset-legend">
+                                <i class="bi bi-info-circle"></i> Подробная информация
+                            </legend>
+
+                            <!-- Блок-помощник с AI (раскомментировать при необходимости) -->
+                            <div class="ai-helper-card">
+                                <h6 class="ai-helper-title">
+                                    <i class="bi bi-stars"></i>
+                                    AI-помощник для раздела "О себе"
+                                </h6>
+                                <p class="ai-helper-text">
+                                    Не знаете, что написать? Укажите несколько ключевых слов
+                                    (например: "люблю природу, ищу серьезные отношения, служу в храме"),
+                                    и наш помощник создаст для вас привлекательный текст.
+                                </p>
+                                <div class="mb-3">
+                                    <label for="bio-keywords" class="form-label fw-semibold">
+                                        <i class="bi bi-tags"></i> Ключевые слова:
+                                    </label>
+                                    <input type="text"
+                                           id="bio-keywords"
+                                           class="form-control"
+                                           placeholder="Например: люблю читать, служу в храме, ценю семейные ценности...">
+                                </div>
+                                <button type="button" id="generate-bio-btn" class="btn btn-generate">
+                                    <span class="spinner-custom d-none" id="bio-spinner"></span>
+                                    <i class="bi bi-magic"></i>
+                                    Сгенерировать текст
+                                </button>
+                            </div>
+
+                            <!-- Форма с деталями профиля -->
+                            {{ profile_form|crispy }}
+                        </fieldset>
+
+                        <hr class="custom-hr">
+
+                        <div class="d-flex gap-3 justify-content-end flex-wrap">
+                            <a href="{% url 'profiles:profile_detail' pk=user.pk %}"
+                               class="btn btn-cancel">
+                                <i class="bi bi-x-circle"></i> Отмена
+                            </a>
+                            <button type="submit" name="update_profile" class="btn btn-save">
+                                <i class="bi bi-check-circle"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- КОЛОНКА 2: УПРАВЛЕНИЕ ФОТОГРАФИЯМИ -->
+        <div class="col-lg-5 mb-4">
+            <div class="card profile-card">
+                <div class="card-body p-4">
+                    <h2 class="card-title-custom">
+                        <i class="bi bi-images"></i>
+                        Мои фотографии
+                    </h2>
+
+                    <!-- Форма для загрузки нового фото -->
+                    <form method="post" enctype="multipart/form-data" class="mb-4">
+                        {% csrf_token %}
+                        {{ photo_form|crispy }}
+                        <div class="d-grid">
+                            <button type="submit" name="upload_photo" class="btn btn-upload mt-2">
+                                <i class="bi bi-cloud-upload"></i> Загрузить фото
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="custom-hr">
+
+                    <!-- Галерея существующих фото -->
+                    <h5 class="mb-3 text-muted">
+                        <i class="bi bi-collection"></i> Загруженные фото:
+                    </h5>
+
+                    {% if user_photos %}
+                        <div class="row g-3">
+                            {% for photo in user_photos %}
+                            <div class="col-6">
+                                <div class="photo-gallery-item">
+                                    <img src="{{ photo.image.url }}" alt="Фото профиля">
+                                    <!-- Форма для удаления фото -->
+                                    <form method="post"
+                                          action="{% url 'profiles:delete_photo' photo.id %}"
+                                          class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-delete-photo"
+                                                onclick="return confirm('Вы уверены, что хотите удалить это фото?');"
+                                                aria-label="Удалить фото">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-gallery">
+                            <i class="bi bi-image"></i>
+                            <p class="mb-0">У вас пока нет дополнительных фотографий.</p>
+                            <small class="text-muted">Загрузите фото, чтобы сделать профиль привлекательнее!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Подсказки (опционально) -->
+            <div class="card profile-card mt-4">
+                <div class="card-body p-4">
+                    <h5 class="text-muted mb-3">
+                        <i class="bi bi-lightbulb"></i> Советы по заполнению профиля
+                    </h5>
+                    <ul class="list-unstyled small text-muted">
+                        <li class="mb-2">
+                            <i class="bi bi-check2-circle text-success"></i>
+                            Загрузите качественные фотографии
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check2-circle text-success"></i>
+                            Будьте искренни в описании "О себе"
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check2-circle text-success"></i>
+                            Укажите все важные данные
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check2-circle text-success"></i>
+                            Обновляйте информацию регулярно
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT ДЛЯ РАБОТЫ С AI API -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const generateBtn = document.getElementById('generate-bio-btn');
+    const keywordsInput = document.getElementById('bio-keywords');
+    const aboutMeTextarea = document.querySelector('#div_id_about_me textarea');
+    const spinner = document.getElementById('bio-spinner');
+
+    if (generateBtn) {
+        generateBtn.addEventListener('click', async () => {
+            const keywords = keywordsInput.value.trim();
+
+            if (!keywords) {
+                alert('⚠️ Пожалуйста, введите ключевые слова для генерации текста.');
+                keywordsInput.focus();
+                return;
+            }
+
+            // Показываем спиннер и блокируем кнопку
+            spinner.classList.remove('d-none');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<span class="spinner-custom"></span> Генерация...';
+
+            const apiKey = ""; // API-ключ Gemini
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const systemPrompt = `Ты — деликатный и мудрый помощник на православном сайте знакомств.
+            Твоя задача — помочь пользователю написать искренний и привлекательный текст для анкеты в разделе "О себе".
+            Текст должен быть скромным, отражать православные ценности, говорить о поиске серьезных отношений для создания семьи.
+            Не используй высокопарные или банальные фразы.
+            Напиши связный, теплый текст от первого лица на основе ключевых слов, которые предоставит пользователь.
+            Длина текста - 3-4 предложения. Текст должен быть на русском языке.`;
+
+            const userQuery = `Сгенерируй текст "О себе" для профиля на сайте знакомств на основе этих ключевых слов: "${keywords}"`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка API: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const generatedText = candidate.content.parts[0].text;
+                    aboutMeTextarea.value = generatedText;
+                    aboutMeTextarea.style.height = 'auto';
+                    aboutMeTextarea.style.height = aboutMeTextarea.scrollHeight + 'px';
+
+                    // Анимация успеха
+                    aboutMeTextarea.classList.add('border-success');
+                    setTimeout(() => {
+                        aboutMeTextarea.classList.remove('border-success');
+                    }, 2000);
+                } else {
+                    throw new Error('Неожиданный формат ответа API');
+                }
+
+            } catch (error) {
+                console.error('Ошибка при обращении к AI API:', error);
+                alert('❌ Не удалось сгенерировать текст. Пожалуйста, попробуйте позже или заполните раздел вручную.');
+            } finally {
+                // Возвращаем кнопку в исходное состояние
+                spinner.classList.add('d-none');
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="bi bi-magic"></i> Сгенерировать текст';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,481 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Диалог с {{ interlocutor.first_name|default:interlocutor.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-header {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px 12px 0 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-header h1 {
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+    .chat-header a {
+        color: white;
+        text-decoration: none;
+        transition: opacity 0.3s;
+    }
+
+    .chat-header a:hover {
+        opacity: 0.8;
+    }
+
+    .chat-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .chat-log {
+        height: 60vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+    }
+
+    /* Кастомный скроллбар */
+    .chat-log::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .chat-log::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .chat-log::-webkit-scrollbar-thumb {
+        background: #d1a00d;
+        border-radius: 4px;
+    }
+
+    .chat-log::-webkit-scrollbar-thumb:hover {
+        background: #b88d0b;
+    }
+
+    .message-wrapper {
+        margin-bottom: 1rem;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-card {
+        max-width: 70%;
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        word-wrap: break-word;
+    }
+
+    .message-sent {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        margin-left: auto;
+    }
+
+    .message-received {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .message-content {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .message-time {
+        font-size: 0.7rem;
+        opacity: 0.7;
+    }
+
+    .delete-btn {
+        padding: 0.15rem 0.5rem;
+        font-size: 0.7rem;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: inherit;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+
+    .delete-btn:hover {
+        background: rgba(220, 53, 69, 0.8);
+        color: white;
+    }
+
+    .chat-footer {
+        background-color: white;
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .btn-send {
+        background-color: #d1a00d;
+        color: white;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-send:hover {
+        background-color: #b88d0b;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+    }
+
+    .btn-send:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .typing-indicator {
+        display: none;
+        padding: 0.5rem;
+        font-style: italic;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .typing-indicator.active {
+        display: block;
+    }
+
+    .empty-chat {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-chat i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 720px) {
+        .d-flex {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="chat-container">
+        <!-- Заголовок чата -->
+        <div class="chat-header">
+            <h1 class="mb-0">
+                <i class="bi bi-chat-dots"></i>
+                Диалог с
+                <a href="{% url 'profiles:profile_detail' pk=interlocutor.pk %}">
+                    {{ interlocutor.first_name|default:interlocutor.username }}
+                </a>
+            </h1>
+        </div>
+
+        <!-- Область сообщений -->
+        <div id="chat-log" class="chat-log">
+            {% if messages_list %}
+                {% for message in messages_list %}
+                    <div class="message-wrapper d-flex
+                                {% if message.sender == user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                        <div class="card message-card
+                                    {% if message.sender == user %}message-sent{% else %}message-received{% endif %}">
+                            <div class="card-body p-2">
+                                <p class="message-content">{{ message.content|linebreaks }}</p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="message-time">
+                                        {{ message.timestamp|time:"H:i" }}
+                                        {% if message.sender == user and message.is_read %}
+                                            <i class="bi bi-check2-all text-info" title="Прочитано"></i>
+                                        {% elif message.sender == user %}
+                                            <i class="bi bi-check2" title="Отправлено"></i>
+                                        {% endif %}
+                                    </small>
+
+                                    <button class="delete-btn"
+                                            data-id="{{ message.pk }}"
+                                            data-bs-toggle="tooltip"
+                                            title="Удалить сообщение">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-chat">
+                    <i class="bi bi-chat-heart"></i>
+                    <p class="mb-0">Начните диалог с {{ interlocutor.first_name|default:interlocutor.username }}!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Индикатор "печатает" -->
+        <div class="typing-indicator" id="typing-indicator">
+            <i class="bi bi-three-dots"></i>
+            {{ interlocutor.first_name|default:interlocutor.username }} печатает...
+        </div>
+
+        <!-- Форма отправки -->
+        <div class="chat-footer">
+            <form method="post" id="message-form">
+                {% csrf_token %}
+                <div class="input-group d-flex flex-wrap">
+                    <div class="flex-grow-1 .me-{n}">
+                        {{ form.content }}
+                    </div>
+                    <button class="btn btn-send" type="submit" id="send-btn">
+                        <i class="bi bi-send-fill"></i>
+                        <span class="d-none d-sm-inline ms-1">Отправить</span>
+                    </button>
+                </div>
+                <div id="form-error" class="alert alert-danger mt-2 d-none" role="alert"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Данные для JS -->
+<script id="chat-data" type="application/json">
+{
+    "interlocutorId": {{ interlocutor.pk }},
+    "currentUserId": {{ user.id }},
+    "lastTimestamp": "{% if messages_list.last %}{{ messages_list.last.timestamp.isoformat }}{% else %}1970-01-01T00:00:00+00:00{% endif %}",
+    "deleteUrl": "{% url 'profiles:delete_message_ajax' pk=0 %}",
+    "newMessagesUrl": "{% url 'profiles:get_new_messages' pk=interlocutor.pk last_timestamp='TIMESTAMP' %}"
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+// Получение данных
+const chatData = JSON.parse(document.getElementById('chat-data').textContent);
+
+// ==============================================================================
+// УТИЛИТЫ
+// ==============================================================================
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+function scrollToBottom() {
+    const chatLog = document.getElementById('chat-log');
+    chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+// ==============================================================================
+// УДАЛЕНИЕ СООБЩЕНИЙ
+// ==============================================================================
+
+function initDeleteButtons() {
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!confirm('Удалить сообщение?')) return;
+
+            const messageId = this.dataset.id;
+            const messageWrapper = this.closest('.message-wrapper');
+
+            try {
+                const response = await fetch(
+                    chatData.deleteUrl.replace('0', messageId),
+                    {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }
+                );
+
+                if (!response.ok) throw new Error('Ошибка удаления');
+
+                const data = await response.json();
+                if (data.success) {
+                    messageWrapper.style.animation = 'fadeOut 0.3s ease-out';
+                    setTimeout(() => messageWrapper.remove(), 300);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Не удалось удалить сообщение');
+            }
+        });
+    });
+}
+
+// ==============================================================================
+// ОТПРАВКА СООБЩЕНИЙ
+// ==============================================================================
+
+function initMessageForm() {
+    const form = document.getElementById('message-form');
+    const sendBtn = document.getElementById('send-btn');
+    const formError = document.getElementById('form-error');
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const content = formData.get('content').trim();
+
+        if (!content) {
+            formError.textContent = 'Введите сообщение';
+            formError.classList.remove('d-none');
+            return;
+        }
+
+        // Проверка на отправку самому себе
+        const chatData = JSON.parse(document.getElementById('chat-data').textContent);
+        if (chatData.interlocutorId === chatData.currentUserId) {
+            formError.textContent = 'Нельзя отправить сообщение самому себе';
+            formError.classList.remove('d-none');
+            return;
+}
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        formError.classList.add('d-none');
+
+        try {
+            const response = await fetch('', {
+                method: 'POST',
+                body: formData
+            });
+
+            console.log('Response status:', response.status);
+
+            if (response.ok) {
+                form.reset();
+                // Сообщения обновятся через polling
+                setTimeout(scrollToBottom, 100);
+            } else {
+                const errorText = await response.text();  // можно показать текст ошибки от сервера
+                console.warn('Сервер вернул ошибку:', response.status, errorText);
+                formError.textContent = 'Не удалось отправить сообщение. Попробуйте позже.';
+                formError.classList.remove('d-none');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            formError.textContent = 'Не удалось отправить сообщение';
+            formError.classList.remove('d-none');
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="bi bi-send-fill"></i><span class="d-none d-sm-inline ms-1">Отправить</span>';
+        }
+    });
+}
+
+// ==============================================================================
+// POLLING НОВЫХ СООБЩЕНИЙ
+// ==============================================================================
+
+let lastTimestamp = chatData.lastTimestamp;
+
+async function checkNewMessages() {
+    try {
+        const url = chatData.newMessagesUrl.replace('TIMESTAMP', encodeURIComponent(lastTimestamp));
+        const response = await fetch(url);
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.messages && data.messages.length > 0) {
+            const chatLog = document.getElementById('chat-log');
+            const emptyChat = chatLog.querySelector('.empty-chat');
+            if (emptyChat) emptyChat.remove();
+
+            data.messages.forEach(msg => {
+                const isOwn = msg.sender_id === chatData.currentUserId;
+                const messageHTML = `
+                    <div class="message-wrapper d-flex ${isOwn ? 'justify-content-end' : 'justify-content-start'}">
+                        <div class="card message-card ${isOwn ? 'message-sent' : 'message-received'}">
+                            <div class="card-body p-2">
+                                <p class="message-content">${escapeHtml(msg.content)}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="message-time">${msg.timestamp}</small>
+                                    <button class="delete-btn" data-id="${msg.id}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatLog.insertAdjacentHTML('beforeend', messageHTML);
+            });
+
+            lastTimestamp = data.last_timestamp;
+            initDeleteButtons();
+            scrollToBottom();
+        }
+    } catch (error) {
+        console.error('Ошибка polling:', error);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ==============================================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ==============================================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    initDeleteButtons();
+    initMessageForm();
+    scrollToBottom();
+
+    // Polling каждые 3 секунды
+    setInterval(checkNewMessages, 3000);
+
+    // Инициализация tooltips
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+});
+
+// Анимация fadeOut
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeOut {
+        to { opacity: 0; transform: scale(0.8); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

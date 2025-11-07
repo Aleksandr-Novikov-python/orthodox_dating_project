@@ -1,0 +1,306 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Вход{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-container {
+        min-height: 70vh;
+        background: linear-gradient(135deg, #e9d884 0%, #f4f1bb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    
+    .login-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border: none;
+        overflow: hidden;
+    }
+    
+    .login-header {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        margin: -1rem -1rem 1.5rem -1rem;
+    }
+    
+    .login-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.75rem;
+    }
+    
+    .login-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus {
+        border-color: #d1a00d;
+        box-shadow: 0 0 0 0.2rem rgba(209, 160, 13, 0.25);
+    }
+    
+    .btn-login {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(209, 160, 13, 0.4);
+        color: white;
+    }
+    
+    .btn-login:active {
+        transform: translateY(0);
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .divider span {
+        padding: 0 1rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .login-links {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+    
+    .login-links a {
+        color: #d1a00d;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s;
+    }
+    
+    .login-links a:hover {
+        color: #b88d0b;
+        text-decoration: underline;
+    }
+    
+    .alert-messages {
+        margin-bottom: 1rem;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6c757d;
+        z-index: 10;
+    }
+    
+    .password-toggle:hover {
+        color: #d1a00d;
+    }
+    
+    .input-group-custom {
+        position: relative;
+    }
+    
+    @media (max-width: 768px) {
+        .login-card {
+            margin: 1rem;
+        }
+        
+        .login-header {
+            padding: 1.5rem;
+        }
+        
+        .login-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card login-card p-4">
+                    <!-- Заголовок -->
+                    <div class="login-header">
+                        <i class="bi bi-box-arrow-in-right fs-1 mb-2"></i>
+                        <h2>Вход на сайт</h2>
+                        <p>Добро пожаловать обратно!</p>
+                    </div>
+
+                    <!-- Сообщения об ошибках/успехе -->
+                    {% if messages %}
+                    <div class="alert-messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Форма входа -->
+                    <form method="post" id="login-form">
+                        {% csrf_token %}
+                        
+                        <!-- Поле username -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">
+                                <i class="bi bi-person"></i> Логин
+                            </label>
+                            <input type="text" 
+                                   name="username" 
+                                   class="form-control" 
+                                   id="id_username"
+                                   placeholder="Введите ваш логин"
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <!-- Поле password -->
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">
+                                <i class="bi bi-lock"></i> Пароль
+                            </label>
+                            <div class="input-group-custom">
+                                <input type="password" 
+                                       name="password" 
+                                       class="form-control" 
+                                       id="id_password"
+                                       placeholder="Введите пароль"
+                                       required>
+                                <i class="bi bi-eye password-toggle" 
+                                   id="toggle-password"
+                                   title="Показать пароль"></i>
+                            </div>
+                        </div>
+
+                        <!-- Remember me (опционально) -->
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   name="remember_me" 
+                                   id="remember_me">
+                            <label class="form-check-label" for="remember_me">
+                                Запомнить меня
+                            </label>
+                        </div>
+
+                        <!-- Кнопка входа -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-login" id="login-btn">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                                Войти
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Разделитель -->
+                    <div class="divider">
+                        <span>или</span>
+                    </div>
+
+                    <!-- Дополнительные ссылки -->
+                    <div class="login-links">
+                        <p class="mb-2">
+                            <a href="{% url 'password_reset' %}">
+                                <i class="bi bi-key"></i> Забыли пароль?
+                            </a>
+                        </p>
+                        <p class="mb-0">
+                            Еще нет аккаунта? 
+                            <a href="{% url 'profiles:register' %}">
+                                <i class="bi bi-person-plus"></i> Зарегистрируйтесь!
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Информация о безопасности -->
+                <div class="text-center mt-3 text-muted small">
+                    <i class="bi bi-shield-check"></i>
+                    Ваши данные защищены и не передаются третьим лицам
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Показать/скрыть пароль
+    const togglePassword = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('id_password');
+    
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Меняем иконку
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+            
+            // Меняем подсказку
+            this.setAttribute('title', type === 'password' ? 'Показать пароль' : 'Скрыть пароль');
+        });
+    }
+    
+    // Блокировка повторной отправки формы
+    const loginForm = document.getElementById('login-form');
+    const loginBtn = document.getElementById('login-btn');
+    
+    if (loginForm && loginBtn) {
+        loginForm.addEventListener('submit', function() {
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Вход...';
+            
+            // Разблокируем через 5 секунд на случай ошибки
+            setTimeout(function() {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Войти';
+            }, 5000);
+        });
+    }
+    
+    // Автофокус на поле username при загрузке
+    const usernameInput = document.getElementById('id_username');
+    if (usernameInput && !usernameInput.value) {
+        usernameInput.focus();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,424 @@
+{% extends "profiles/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block extra_css %}
+<style>
+    .register-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #e9d884 0%, #f4f1bb 100%);
+        padding: 2rem 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .register-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border: none;
+        margin: 2rem 0;
+    }
+    
+    .register-header {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+        border-radius: 16px 16px 0 0;
+        margin: -1px -1px 0 -1px;
+    }
+    
+    .register-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.75rem;
+    }
+    
+    .register-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+    
+    .step {
+        flex: 1;
+        text-align: center;
+        position: relative;
+    }
+    
+    .step-number {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        color: #6c757d;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s;
+    }
+    
+    .step.active .step-number {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .step.active .step-label {
+        color: #d1a00d;
+        font-weight: 600;
+    }
+    
+    .fieldset-card {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid #e9ecef;
+    }
+    
+    .fieldset-card legend {
+        color: #d1a00d;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        padding: 0 0.5rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #d1a00d;
+        box-shadow: 0 0 0 0.2rem rgba(209, 160, 13, 0.25);
+    }
+    
+    .btn-register {
+        background: linear-gradient(135deg, #d1a00d 0%, #c39d0a 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(209, 160, 13, 0.4);
+        color: white;
+    }
+    
+    .btn-register:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .password-strength {
+        height: 4px;
+        background: #e9ecef;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s;
+        border-radius: 2px;
+    }
+    
+    .strength-weak { background-color: #dc3545; width: 33%; }
+    .strength-medium { background-color: #ffc107; width: 66%; }
+    .strength-strong { background-color: #28a745; width: 100%; }
+    
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .login-link a {
+        color: #d1a00d;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .login-link a:hover {
+        color: #b88d0b;
+        text-decoration: underline;
+    }
+    
+    .required-indicator {
+        color: #dc3545;
+        margin-left: 0.25rem;
+    }
+    
+    @media (max-width: 768px) {
+        .register-container {
+            padding: 1rem;
+        }
+        
+        .register-header {
+            padding: 1.5rem;
+        }
+        
+        .register-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .step-indicator {
+            margin: 1rem 0;
+        }
+        
+        .step-number {
+            width: 35px;
+            height: 35px;
+        }
+        
+        .step-label {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="card register-card">
+                    <!-- Заголовок -->
+                    <div class="register-header">
+                        <i class="bi bi-person-plus-fill fs-1 mb-2"></i>
+                        <h2>Создание аккаунта</h2>
+                        <p>Присоединяйтесь к нашему сообществу!</p>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <!-- Индикатор шагов -->
+                        <div class="step-indicator">
+                            <div class="step active" data-step="1">
+                                <div class="step-number">1</div>
+                                <div class="step-label">Данные входа</div>
+                            </div>
+                            <div class="step" data-step="2">
+                                <div class="step-number">2</div>
+                                <div class="step-label">О себе</div>
+                            </div>
+                        </div>
+
+                        <!-- Сообщения об ошибках -->
+                        {% if messages %}
+                        <div class="alert-messages mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Форма регистрации -->
+                        <form method="post" enctype="multipart/form-data" id="register-form">
+                            {% csrf_token %}
+                            
+                            <!-- Шаг 1: Данные для входа -->
+                            <fieldset class="fieldset-card" id="step-1">
+                                <legend>
+                                    <i class="bi bi-person-badge"></i> Шаг 1: Данные для входа
+                                </legend>
+                                {{ user_form|crispy }}
+                                
+                                <!-- Индикатор силы пароля -->
+                                <div class="password-strength" id="password-strength">
+                                    <div class="password-strength-bar"></div>
+                                </div>
+                                <small class="text-muted" id="password-strength-text"></small>
+                            </fieldset>
+                            
+                            <!-- Шаг 2: Информация о себе -->
+                            <fieldset class="fieldset-card" id="step-2">
+                                <legend>
+                                    <i class="bi bi-card-text"></i> Шаг 2: Информация о себе
+                                </legend>
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-info-circle"></i>
+                                    Поля отмеченные <span class="required-indicator">*</span> обязательны для заполнения
+                                </p>
+                                {{ profile_form|crispy }}
+                            </fieldset>
+                            
+                            <!-- Кнопка регистрации -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-register" id="register-btn">
+                                    <i class="bi bi-check-circle"></i>
+                                    Зарегистрироваться
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Ссылка на вход -->
+                        <div class="login-link">
+                            <p class="mb-0">
+                                Уже есть аккаунт? 
+                                <a href="{% url 'login' %}">
+                                    <i class="bi bi-box-arrow-in-right"></i> Войти
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Информация о безопасности -->
+                <div class="text-center mt-3 text-muted small">
+                    <i class="bi bi-shield-check"></i>
+                    Ваши данные защищены и не передаются третьим лицам
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('register-form');
+    const registerBtn = document.getElementById('register-btn');
+    
+    // ======================================================================
+    // ИНДИКАТОР СИЛЫ ПАРОЛЯ
+    // ======================================================================
+    const passwordInput = document.querySelector('input[name="password"]');
+    const strengthBar = document.querySelector('.password-strength-bar');
+    const strengthText = document.getElementById('password-strength-text');
+    
+    if (passwordInput) {
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            const strength = calculatePasswordStrength(password);
+            
+            strengthBar.className = 'password-strength-bar';
+            
+            if (strength.score === 0) {
+                strengthText.textContent = '';
+            } else if (strength.score < 3) {
+                strengthBar.classList.add('strength-weak');
+                strengthText.textContent = 'Слабый пароль';
+                strengthText.style.color = '#dc3545';
+            } else if (strength.score < 4) {
+                strengthBar.classList.add('strength-medium');
+                strengthText.textContent = 'Средний пароль';
+                strengthText.style.color = '#ffc107';
+            } else {
+                strengthBar.classList.add('strength-strong');
+                strengthText.textContent = 'Надёжный пароль';
+                strengthText.style.color = '#28a745';
+            }
+        });
+    }
+    
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 8) score++;
+        if (password.length >= 12) score++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+        if (/\d/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        
+        return { score };
+    }
+    
+    // ======================================================================
+    // ВИЗУАЛЬНАЯ ИНДИКАЦИЯ АКТИВНОГО ШАГА
+    // ======================================================================
+    const step1 = document.getElementById('step-1');
+    const step2 = document.getElementById('step-2');
+    const stepIndicators = document.querySelectorAll('.step');
+    
+    // Обсервер для отслеживания видимости шагов
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const stepNum = entry.target.id === 'step-1' ? 1 : 2;
+                updateStepIndicator(stepNum);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    if (step1) observer.observe(step1);
+    if (step2) observer.observe(step2);
+    
+    function updateStepIndicator(activeStep) {
+        stepIndicators.forEach((step, index) => {
+            if (index + 1 <= activeStep) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+    }
+    
+    // ======================================================================
+    // БЛОКИРОВКА ПОВТОРНОЙ ОТПРАВКИ
+    // ======================================================================
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Проверка обязательных полей
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Блокируем кнопку
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Создание аккаунта...';
+            
+            // Разблокируем через 10 секунд на случай ошибки
+            setTimeout(function() {
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = '<i class="bi bi-check-circle"></i> Зарегистрироваться';
+            }, 10000);
+        });
+    }
+    
+    // ======================================================================
+    // АВТОФОКУС НА ПЕРВОМ ПОЛЕ
+    // ======================================================================
+    const firstInput = form.querySelector('input[type="text"]');
+    if (firstInput && !firstInput.value) {
+        firstInput.focus();
+    }
+    
+    // ======================================================================
+    // ПОДСКАЗКИ ДЛЯ ПОЛЕЙ
+    // ======================================================================
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+});
+</script>
+{% endblock %}

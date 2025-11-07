@@ -1,0 +1,233 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Жалоба на {{ reported_user.first_name|default:reported_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .complaint-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .complaint-header {
+        color: #d1a00d;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .complaint-user {
+        color: #333;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .warning-box {
+        background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+        border-left: 4px solid #d1a00d;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .warning-box p {
+        margin: 0;
+        color: #666;
+        font-size: 0.95rem;
+    }
+    
+    .btn-submit-complaint {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit-complaint:hover {
+        background-color: #c82333;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background-color: #5a6268;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .form-actions {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column-reverse !important;
+        }
+        
+        .form-actions .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="complaint-card p-4">
+                <!-- Заголовок -->
+                <h1 class="complaint-header text-center mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Жалоба на пользователя
+                </h1>
+                
+                <h4 class="complaint-user text-center">
+                    {{ reported_user.first_name|default:reported_user.username }}
+                    {% if reported_user.last_name %}
+                        {{ reported_user.last_name }}
+                    {% endif %}
+                </h4>
+
+                <!-- Предупреждение -->
+                <div class="warning-box">
+                    <p>
+                        <i class="bi bi-info-circle text-warning"></i>
+                        <strong>Важно:</strong> Пожалуйста, используйте эту форму только для сообщения о реальных нарушениях. 
+                        Необоснованные жалобы могут привести к ограничениям для вашего аккаунта.
+                    </p>
+                </div>
+
+                <!-- Форма -->
+                <form method="post" id="complaint-form" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Причина жалобы -->
+                    <div class="mb-3">
+                        {{ form.reason|as_crispy_field }}
+                    </div>
+
+                    <!-- Описание -->
+                    <div class="mb-3">
+                        {{ form.description|as_crispy_field }}
+                        <small class="form-text text-muted">
+                            <i class="bi bi-lightbulb"></i>
+                            Опишите ситуацию максимально объективно и подробно
+                        </small>
+                    </div>
+
+                    <!-- Ошибки формы -->
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-x-circle"></i>
+                        <strong>Ошибка!</strong> Пожалуйста, исправьте указанные ошибки.
+                    </div>
+                    {% endif %}
+
+                    <!-- Кнопки действий -->
+                    <div class="form-actions d-flex justify-content-end gap-2">
+                        <a href="{% url 'profiles:profile_detail' pk=reported_user.pk %}" 
+                           class="btn btn-cancel">
+                            <i class="bi bi-x-lg"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-submit-complaint" id="submit-btn">
+                            <i class="bi bi-send"></i> Отправить жалобу
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Информация о конфиденциальности -->
+                <div class="mt-4 text-center text-muted small">
+                    <i class="bi bi-shield-check"></i>
+                    Все жалобы обрабатываются конфиденциально и проверяются модераторами
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+'use strict';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('complaint-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Блокируем повторную отправку
+            if (submitBtn.disabled) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Валидация
+            const reason = form.querySelector('[name="reason"]');
+            if (!reason || !reason.value) {
+                e.preventDefault();
+                alert('Пожалуйста, выберите причину жалобы');
+                return;
+            }
+            
+            // Подтверждение
+            if (!confirm('Вы уверены, что хотите отправить жалобу?')) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Блокируем кнопку
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Отправка...';
+            
+            // Если что-то пойдёт не так, разблокируем через 5 секунд
+            setTimeout(function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send"></i> Отправить жалобу';
+            }, 5000);
+        });
+    }
+    
+    // Автосохранение в localStorage (опционально)
+    const descriptionField = document.getElementById('id_description');
+    if (descriptionField) {
+        // Восстановление из localStorage при загрузке
+        const savedDescription = localStorage.getItem('complaint_description');
+        if (savedDescription && !descriptionField.value) {
+            descriptionField.value = savedDescription;
+        }
+        
+        // Сохранение при вводе
+        let saveTimeout;
+        descriptionField.addEventListener('input', function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(function() {
+                localStorage.setItem('complaint_description', descriptionField.value);
+            }, 1000);
+        });
+        
+        // Очистка localStorage после отправки
+        form.addEventListener('submit', function() {
+            localStorage.removeItem('complaint_description');
+        });
+    }
+});
+</script>
+{% endblock %}

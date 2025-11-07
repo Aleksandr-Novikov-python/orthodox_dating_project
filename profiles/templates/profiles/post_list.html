@@ -1,0 +1,246 @@
+{% extends "profiles/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Блог{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Контейнер блога */
+    .blog-container {
+        min-height: 70vh;
+        background: linear-gradient(135deg, #e9d884 0%, #f4f1bb 100%);
+        padding: 40px 20px;
+    }
+
+    /* Заголовок блога */
+    .blog-title {
+        color: #614a04ff;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    /* Карточка поста */
+    .post-card {
+        background-color: #ffffff;
+        border: 1px solid #e9d884;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* Контейнер изображения поста */
+    .post-img-container {
+        overflow: hidden;
+        max-height: 300px;
+        position: relative;
+    }
+
+    .post-img-container img {
+        transition: transform 0.4s ease;
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+    }
+
+    .post-card:hover .post-img-container img {
+        transform: scale(1.08);
+    }
+
+    /* Заголовок поста */
+    .post-title {
+        color: #614a04ff;
+        font-weight: 600;
+        transition: color 0.3s ease;
+        font-size: 1.5rem;
+    }
+
+    .post-title:hover {
+        color: #d1a00dff;
+    }
+
+    /* Информация об авторе */
+    .post-meta {
+        font-size: 0.9em;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .post-meta i {
+        color: #d1a00dff;
+    }
+
+    /* Текст поста */
+    .post-content {
+        color: #495057;
+        line-height: 1.7;
+        margin: 15px 0;
+    }
+
+    /* Кнопка "Читать далее" */
+    .btn-read-more {
+        background-color: #d1a00dff;
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 25px;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-read-more:hover {
+        background-color: #b88f0b;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(209, 160, 13, 0.3);
+    }
+
+    /* Боковая панель */
+    .sidebar-card {
+        background-color: #ffffff;
+        border: 1px solid #e9d884;
+        border-radius: 12px;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-title {
+        color: #614a04ff;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .sidebar-text {
+        color: #495057;
+        line-height: 1.6;
+    }
+
+    /* Alert для пустого блога */
+    .empty-blog-alert {
+        background: linear-gradient(135deg, #f4f1bb 0%, #ffffff 100%);
+        border: 2px solid #d1a00dff;
+        color: #614a04ff;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 1.1em;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-blog-alert i {
+        font-size: 3rem;
+        color: #d1a00dff;
+        margin-bottom: 15px;
+    }
+
+    /* Разделитель автора */
+    .author-divider {
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, #d1a00dff, transparent);
+        margin: 10px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row blog-container">
+    <div class="col-lg-9 mb-4">
+        <h1 class="blog-title text-center">
+            <i class="bi bi-journal-text"></i> Наш Блог
+        </h1>
+        
+        {% for post in posts %}
+            <article class="card post-card mb-4 shadow-sm border-0">
+                {% if post.image %}
+                    <div class="post-img-container">
+                        <a href="{{ post.get_absolute_url }}" aria-label="Читать {{ post.title }}">
+                            <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <div class="card-body p-4">
+                    <h2 class="card-title mb-3">
+                        <a href="{{ post.get_absolute_url }}" class="text-decoration-none post-title">
+                            {{ post.title }}
+                        </a>
+                    </h2>
+                    
+                    <div class="post-meta mb-3">
+                        <span>
+                            <i class="bi bi-calendar3"></i>
+                            {{ post.created_at|date:"d.m.Y" }}
+                        </span>
+                        <span>
+                            <i class="bi bi-person-circle"></i>
+                            {{ post.author.first_name }}
+                        </span>
+                    </div>
+                    
+                    <div class="author-divider"></div>
+                    
+                    <div class="post-content">
+                        {{ post.content|truncatewords_html:40|safe }}
+                    </div>
+                    
+                    <a href="{{ post.get_absolute_url }}" 
+                       class="btn btn-read-more mt-3"
+                       aria-label="Читать статью {{ post.title }}">
+                        <i class="bi bi-book-half"></i> Читать далее
+                    </a>
+                </div>
+            </article>
+        {% empty %}
+            <div class="alert empty-blog-alert" role="alert">
+                <i class="bi bi-inbox"></i>
+                <h4 class="mb-3">Блог пока пуст</h4>
+                <p class="mb-0">Пока нет ни одной статьи в блоге. Заходите позже!</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <aside class="col-lg-3">
+        <div class="card sidebar-card mb-4 shadow-sm border-0">
+            <div class="card-body p-4">
+                <h5 class="sidebar-title text-center mb-3">
+                    <i class="bi bi-info-circle"></i> О блоге
+                </h5>
+                <div class="author-divider mx-auto"></div>
+                <p class="sidebar-text text-center mt-3">
+                    Здесь мы публикуем статьи о православной семье, вере и отношениях, 
+                    а также отвечаем на ваши вопросы.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Дополнительный блок (опционально) -->
+        <div class="card sidebar-card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h5 class="sidebar-title text-center mb-3">
+                    <i class="bi bi-heart"></i> Темы блога
+                </h5>
+                <div class="author-divider mx-auto"></div>
+                <ul class="list-unstyled mt-3 text-center sidebar-text">
+                    <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Семья и вера</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Отношения</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Воспитание детей</li>
+                    <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Духовная жизнь</li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
