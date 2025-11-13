@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.apps import AppConfig
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ProfilesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -14,4 +17,4 @@ class ProfilesConfig(AppConfig):
         import profiles.signals.complaint_signal
         import profiles.signals.create_user_profile_signal
         import profiles.signals.photo_signals
-    
+

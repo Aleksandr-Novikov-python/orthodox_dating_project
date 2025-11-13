@@ -1,7 +1,6 @@
 import logging
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
-from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -10,7 +9,6 @@ from django.views import View
 from profiles.forms import UserRegistrationForm, UserProfileForm
 from profiles.models import UserProfile, UserSession
 from profiles.services.photo_validator import validate_registration_photo
-from profiles.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -186,26 +184,6 @@ def _render_registration_page(request, user_form, profile_form):
         'user_form': user_form,
         'profile_form': profile_form
     })
-# def _display_form_errors(request, user_form, profile_form):
-#     """Отображение ошибок валидации форм"""
-#     for form in [user_form, profile_form]:
-#         for field, errors in form.errors.items():
-#             for error in errors:
-#                 field_label = (
-#                     form.fields[field].label 
-#                     if field in form.fields and hasattr(form.fields[field], 'label')
-#                     else field
-#                 )
-#                 messages.error(request, f'{field_label}: {error}')
-
-
-# def _render_registration_page(request, user_form, profile_form):
-#     """Рендер страницы регистрации с формами"""
-#     return render(request, 'profiles/register.html', {
-#         'user_form': user_form,
-#         'profile_form': profile_form
-#     })
-
 
 class CustomLogoutView(View):
     """Выход пользователя с сохранением статистики"""

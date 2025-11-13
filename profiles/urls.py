@@ -3,7 +3,7 @@ from django.urls import path
 
 from profiles.views import CustomLogoutView
 from . import views
-from .views import (
+from profiles.views import (
     OrthodoxCalendarView,
     CalendarAPIView,
     CalendarMonthView,

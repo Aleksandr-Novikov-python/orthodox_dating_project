@@ -4,7 +4,10 @@ from django.utils import timezone
 from django.core.cache import cache
 from django.db import DatabaseError
 from datetime import timedelta
-from .models import UserProfile
+from profiles.models import UserProfile
+from profiles.models import UserSession
+
+from django.utils.deprecation import MiddlewareMixin
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +215,7 @@ def online_users_processor(request):
         'OPTIONS': {
             'context_processors': [
                 ...
-                'profiles.middleware.online_users_processor',
+                'profiles.middlewares.middleware.online_users_processor',
             ],
         },
     }]
@@ -224,9 +227,6 @@ def online_users_processor(request):
 # ==========================================
 # MIDDLEWARE ДЛЯ СТАТИСТИКИ
 # ========================================== 
-from django.utils.deprecation import MiddlewareMixin
-from .models import UserSession
-
 
 class SessionTrackingMiddleware(MiddlewareMixin):
     def process_request(self, request):

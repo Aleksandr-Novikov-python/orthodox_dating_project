@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from pathlib import Path
 from decouple import config
 import dj_database_url
@@ -41,8 +42,40 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'django_q',
-    'silk',
 ]
+
+# ==============================================================================
+# SILKY
+# ==============================================================================
+if DEBUG:
+    INSTALLED_APPS += ['silk']
+
+    SILKY_PYTHON_PROFILER = True
+    SILKY_PYTHON_PROFILER_BINARY = False
+
+    silk_path = BASE_DIR / 'silk_prof'
+    silk_path.mkdir(parents=True, exist_ok=True)
+    SILK_PROFILE_DIR = str(silk_path)
+
+    SILKY_IGNORE_PATHS = [
+        '/static/',
+        '/media/',
+        '/favicon.ico',
+    ]
+
+    SILKY_INTERCEPT_FUNC = lambda request: not (
+        request.path.endswith('.js') or 
+        request.path.endswith('.css') or
+        request.path.endswith('.map') or
+        request.path.startswith('/static/') or
+        request.path.startswith('/media/')
+    )
+
+    SILKY_MAX_RECORDED_REQUESTS = 10000
+    SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
+    SILKY_MIDDLEWARE_ENABLED = DEBUG
+    SILKY_MAX_RESPONSE_BODY_SIZE = 1024 * 1024  # 1MB
+
 Q_CLUSTER = {
     'name': 'orthodox',
     'workers': 4,
@@ -51,12 +84,13 @@ Q_CLUSTER = {
     'queue_limit': 50,
     'bulk': 10,
     'orm': 'default',
+    'log_level': 'INFO'  # или 'DEBUG' для отладки
 }
 
 Q_CLUSTER['redis'] = {
     'host': '127.0.0.1',
     'port': 6379,
-    'db': 0,
+    'db': 1,
 }
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
@@ -64,6 +98,8 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_TRACK_STARTED = True  # Позволяет видеть статус STARTED
 CELERY_TASK_TIME_LIMIT = 300      # Ограничение по времени (в секундах)
+CELERY_TASK_SOFT_TIME_LIMIT = 270  # например, за 30 секунд до жёсткого
+
 
 # ==============================================================================
 # MIDDLEWARE
@@ -71,19 +107,28 @@ CELERY_TASK_TIME_LIMIT = 300      # Ограничение по времени (
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Сразу после SecurityMiddleware
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-        # СТАТИСТИКА
-    'profiles.middleware.SessionTrackingMiddleware',
+
+    # ✅ Ваш фильтр Silk
+    'profiles.middlewares.silk_filter.SilkFilterMiddleware',
+    # Твоя статистика
+    'profiles.middlewares.middleware.SessionTrackingMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'profiles.middleware.UpdateLastSeenMiddleware',
-    'silk.middleware.SilkyMiddleware',
+    'profiles.middlewares.middleware.UpdateLastSeenMiddleware',
 ]
-
+if DEBUG:
+    try:
+        idx = MIDDLEWARE.index('profiles.middlewares.silk_filter.SilkFilterMiddleware')
+        if 'silk.middleware.SilkyMiddleware' not in MIDDLEWARE:
+            MIDDLEWARE.insert(idx + 1, 'silk.middleware.SilkyMiddleware')
+    except ValueError:
+        # Если фильтр отсутствует — вставить Silk в начало или логировать
+        MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware')
 
 # ==============================================================================
 # URL И TEMPLATES
@@ -103,7 +148,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'profiles.context_processors.unread_notifications_count',
-                'profiles.middleware.online_users_processor',
+                'profiles.middlewares.middleware.online_users_processor'
             ],
         },
     },
@@ -309,22 +354,9 @@ else:
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
-
 # ==============================================================================
 # ЛОГИРОВАНИЕ
 # ==============================================================================
-SILK_SAVE_REQUEST_BODY = False
-SILK_SAVE_RESPONSE_BODY = False
-SILK_IGNORE_PATHS = ['/static/', '/js/', '/favicon.ico']
-SILK_IGNORE_PATHS = [
-    '/static/',
-    '/js/',
-    '/favicon.ico',
-    '/admin/',
-    '/media/',
-]
-
-from pathlib import Path
 
 # Создаем директорию для логов если её нет
 LOGS_DIR = BASE_DIR / 'logs'
@@ -334,22 +366,7 @@ LOGS_DIR.mkdir(exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'django_all.log',
-        },
-    },
-    'loggers': {
-        'django_q': {
-            'handlers': ['file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-    },
 
-    # Форматы вывода
     'formatters': {
         'verbose': {
             'format': '[{levelname}] {asctime} {name} {module}.{funcName}:{lineno} | {message}',
@@ -366,8 +383,7 @@ LOGGING = {
             'format': '%(asctime)s %(name)s %(levelname)s %(message)s',
         },
     },
-    
-    # Фильтры
+
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
@@ -376,147 +392,118 @@ LOGGING = {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
-    
-    # Обработчики (handlers)
+
     'handlers': {
-        # Консоль (для development)
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'simple',
             'filters': ['require_debug_true'],
         },
-        
-        # Файл для всех логов
+        'silk_errors': {
+            'level': 'ERROR',  # ✅ Только ошибки, не WARNING
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'logs/silk.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 3,
+        },
         'file_all': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOGS_DIR / 'django_all.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB
+            'maxBytes': 10 * 1024 * 1024,
             'backupCount': 5,
             'formatter': 'verbose',
             'encoding': 'utf-8',
         },
-        
-        # Файл только для ошибок
         'file_errors': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOGS_DIR / 'django_errors.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB
+            'maxBytes': 10 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose',
             'encoding': 'utf-8',
         },
-        
-        # Файл для безопасности
         'file_security': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOGS_DIR / 'security.log',
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB
+            'maxBytes': 10 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose',
             'encoding': 'utf-8',
         },
-        
-        # Email для критических ошибок (production)
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
             'filters': ['require_debug_false'],
             'formatter': 'verbose',
         },
-        
-        # Sentry (опционально, для production)
-        # 'sentry': {
-        #     'level': 'ERROR',
-        #     'class': 'sentry_sdk.integrations.logging.EventHandler',
-        # },
     },
-    
-    # Логгеры для разных частей приложения
+
     'loggers': {
-        # Главный Django логгер
         'django': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
             'propagate': False,
         },
-        
-        # Django запросы
         'django.request': {
             'handlers': ['file_errors', 'mail_admins'],
             'level': 'ERROR',
             'propagate': False,
         },
-        
-        # Django безопасность
         'django.security': {
             'handlers': ['file_security', 'mail_admins'],
             'level': 'WARNING',
             'propagate': False,
         },
-
         'django_q': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
             'propagate': False,
         },
-
         'django.db.backends': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
-        
-        # Логгер для profiles приложения
         'profiles': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
             'propagate': False,
         },
-        
-        # Логгер для Celery задач
         'celery': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
             'propagate': False,
         },
-        
         'redis': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'WARNING',
             'propagate': False,
         },
-
         'photo_signals': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
             'propagate': False,
         },
-
-        # Корневой логгер
+        'silk': {
+            'handlers': ['silk_errors'],
+            'level': 'ERROR',  # Было: 'WARNING'
+            'propagate': False,
+        },
+        'silk.model_factory': {
+            'handlers': ['silk_errors'],
+            'level': 'ERROR',  # ✅ Игнорируем WARNING
+            'propagate': False,
+        },       
         'root': {
             'handlers': ['console', 'file_all', 'file_errors'],
             'level': 'INFO',
         },
     },
 }
-
-
-# sentry_logging = LoggingIntegration(
-#     level=logging.INFO,        # breadcrumbs
-#     event_level=logging.ERROR  # ошибки
-# )
-
-# sentry_sdk.init(
-#     dsn=config("SENTRY_DSN", default=None),
-#     integrations=[DjangoIntegration(), sentry_logging],
-#     traces_sample_rate=1.0 if DEBUG else 0.2,
-#     send_default_pii=True,
-# )
-
 
 # ✅ ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ ДЛЯ PRODUCTION
 

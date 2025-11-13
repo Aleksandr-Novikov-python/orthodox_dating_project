@@ -406,7 +406,9 @@
                             <div class="reply-body">
                                 <div class="reply-header">
                                     <span class="reply-author">{{ reply.author.first_name }}</span>
-                                    <span class="reply-date">{{ reply.created_at|date:"d.m.Y H:i" }}</span>
+                                    <span class="reply-date"><i class="bi bi-clock-fill"></i>
+                                        {{ reply.created_at|date:"d.m.Y H:i" }}
+                                    </span>
                                 </div>
                                 <div class="reply-text">
                                     {{ reply.body|linebreaks }}

@@ -42,21 +42,40 @@ def start_user_session(sender, request, user, **kwargs):
     )
 
 
-@receiver(user_logged_out)
-def end_user_session(sender, request, user, **kwargs):
-    sessions = UserSession.objects.filter(user=user, logout_time__isnull=True)
+# @receiver(user_logged_out)
+# def end_user_session_signal(sender, request, user, **kwargs):
+#     session_key = getattr(request.session, 'session_key', None)
 
-    if sessions.exists():
-        session = sessions.order_by('-login_time').first()
-        session.logout_time = now()
-        session.calculate_duration()
-        session.save()
+#     if not session_key:
+#         logger.debug(f"🔍 Нет session_key в request.session при выходе пользователя: {user.username}")
+#         return
 
-        logger.info(
-            f"✅ Выход пользователя: {user.username} | Длительность: {session.duration} | Session ID: {session.session_key}"
-        )
-    else:
-        session_key = getattr(request.session, 'session_key', '—')
-        logger.warning(
-            f"⚠️ Нет активной сессии для завершения: {user.username} | Session Key: {session_key}"
-        )
+#     try:
+#         session = UserSession.objects.filter(
+#             user=user,
+#             session_key=session_key,
+#             logout_time__isnull=True
+#         ).first()
+
+#         if session:
+#             session.logout_time = now()
+#             session.calculate_duration()
+#             session.save()
+
+#             logger.info(
+#                 f"✅ Выход пользователя: {user.username} | Длительность: {session.duration_minutes} мин | Session ID: {session.session_key}"
+#             )
+#         else:
+#             logger.debug(  # понижаем уровень до debug, чтобы не засорять warning'ами
+#                 f"⚠️ Сессия не найдена или уже завершена: {user.username} | Session Key: {session_key}"
+#             )
+
+#         # Если функция делает что-то ещё (например, чистит кэш или токены)
+#         end_user_session(session_key)
+
+#     except Exception as e:
+#         logger.exception(f"❌ Ошибка при завершении сессии пользователя {user.username}: {e}")
+
+
+
+

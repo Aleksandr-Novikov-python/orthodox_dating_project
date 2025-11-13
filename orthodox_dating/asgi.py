@@ -26,24 +26,4 @@ application = ProtocolTypeRouter({
 })
 
 
-# import os
-# from django.core.asgi import get_asgi_application
-# from channels.routing import ProtocolTypeRouter, URLRouter
-# from channels.auth import AuthMiddlewareStack
-# import profiles.routing
-
-
-# from orthodox_dating.safe_requests import patch_requests
-# patch_requests()
-
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'orthodox_dating.settings')
-
-# application = ProtocolTypeRouter({
-#     "http": get_asgi_application(),
-#     "websocket": AuthMiddlewareStack(
-#         URLRouter(
-#             profiles.routing.websocket_urlpatterns
-#         )
-#     ),
-# })
 

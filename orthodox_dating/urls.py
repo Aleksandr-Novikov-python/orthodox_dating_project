@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-URL configuration for orthodox_dating project.
-"""
+
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
@@ -10,6 +7,12 @@ from django.conf.urls.static import static
 from profiles.views import CustomLogoutView
 
 
+from django.conf import settings
+from pathlib import Path
+
+if settings.DEBUG:
+    profile_dir = Path(settings.SILK_PROFILE_DIR)
+    print("Silk реально сохраняет профили в:", profile_dir)
 # ==============================================================================
 # ОСНОВНЫЕ URL
 # ==============================================================================
@@ -83,6 +86,7 @@ urlpatterns = [
 
     # Все остальные URL из приложения profiles
     path('', include('profiles.urls', namespace='profiles')),
+
 ]
 
 # ==============================================================================
@@ -95,14 +99,6 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
 
-    # Debug Toolbar (если установлен)
-    # try:
-    #     import debug_toolbar
-    #     urlpatterns = [
-    #         path('__debug__/', include(debug_toolbar.urls)),
-    #     ] + urlpatterns
-    # except ImportError:
-    #     pass
 
 
 # ==============================================================================
