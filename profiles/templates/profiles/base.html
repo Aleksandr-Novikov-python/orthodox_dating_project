@@ -375,6 +375,12 @@
                                 <i class="bi bi-journal-text"></i> Блог
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'post_list' %}active{% endif %}"
+                               href="https://t.me/QuantumFlesh_bot?start=<token>">
+                                <i class="bi bi-chat-dots"></i> Чат - группа
+                            </a>
+                        </li>
                         {% if user.is_authenticated %}
                             <li class="nav-item">
                                 <a class="nav-link {% if request.resolver_match.url_name == 'inbox' %}active{% endif %}"

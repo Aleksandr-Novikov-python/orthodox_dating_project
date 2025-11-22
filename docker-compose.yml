@@ -1,9 +1,8 @@
-
-
 services:
   web:
     build: .
     command: daphne -b 0.0.0.0 -p 8000 orthodox_dating.asgi:application
+    restart: unless-stopped
     volumes:
       - .:/app
     ports:
@@ -12,10 +11,16 @@ services:
       - .env
     depends_on:
       - redis
+    networks:
+      - backend
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+
 
   celery:
     build: .
     command: celery -A orthodox_dating worker --loglevel=info
+    restart: unless-stopped
     volumes:
       - .:/app
     env_file:
@@ -25,12 +30,22 @@ services:
     user: "1000:1000"
     environment:
       - TZ=Europe/Kyiv
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    networks:
+      - backend
 
   redis:
     image: redis:7
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+        
 
   flower:
     image: mher/flower
+    restart: unless-stopped
     ports:
       - "5555:5555"
     environment:
@@ -39,8 +54,11 @@ services:
     depends_on:
       - redis
     user: "1000:1000"  # UID:GID непривилегированного пользователя
-
+    networks:
+      - backend
       
+networks:
+  backend:
 
 
 
