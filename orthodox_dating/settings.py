@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
+
 from pathlib import Path
 from decouple import config
 import dj_database_url
@@ -578,6 +578,4 @@ if DEBUG:
         'localhost',
     ]
 
-    # Можно добавить django-debug-toolbar если нужно
-    # INSTALLED_APPS += ['debug_toolbar']
-    # MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+

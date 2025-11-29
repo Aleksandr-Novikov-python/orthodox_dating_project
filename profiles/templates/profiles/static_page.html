@@ -518,3 +518,188 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 {% endblock %}
+
+
+{% comment %} 
+
+    <style>    
+        .content {
+            padding: 40px;
+            line-height: 1.8;
+            color: #333;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #5a67d8;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .section h3 {
+            color: #6b46c1;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .rules-list {
+            margin: 20px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+        
+        .rules-list li {
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            background: #f7fafc;
+            border-left: 4px solid #5a67d8;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .rules-list li:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+        
+        .important {
+            background: #fff5f5;
+            border-left-color: #e53e3e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .important h3 {
+            color: #e53e3e;
+            margin-top: 0;
+        }
+        
+        .footer {
+            background: #f7fafc;
+            padding: 30px 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #5a67d8, transparent);
+            margin: 30px 0;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #fef5e7 0%, #fef5e7 100%);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+    </style>
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="section">
+                <h2>1. Общие положения</h2>
+                <p>Настоящие правила определяют порядок использования сайта православных знакомств. Регистрируясь на сайте, вы принимаете данные правила и обязуетесь их соблюдать.</p>
+                <p>Наш сайт создан для <span class="highlight">знакомства православных христиан</span> с целью создания семьи, основанной на христианских ценностях и традициях.</p>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+                <h2>2. Регистрация и профиль</h2>
+                <ul class="rules-list">
+                    <li>Регистрация доступна лицам, достигшим 18 лет</li>
+                    <li>При регистрации необходимо указывать достоверную информацию</li>
+                    <li>Запрещается создание множественных аккаунтов одним пользователем</li>
+                    <li>Фотографии должны быть достойными и соответствовать христианской этике</li>
+                    <li>Запрещается использование чужих фотографий</li>
+                    <li>Пользователь несет ответственность за сохранность своих учетных данных</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+                <h2>3. Правила общения</h2>
+                <h3>Разрешается:</h3>
+                <ul class="rules-list">
+                    <li>Вежливое и уважительное общение с другими пользователями</li>
+                    <li>Искреннее желание познакомиться для создания семьи</li>
+                    <li>Обсуждение общих интересов, веры, жизненных ценностей</li>
+                    <li>Обмен контактами по взаимному согласию</li>
+                </ul>
+
+                <h3>Запрещается:</h3>
+                <ul class="rules-list">
+                    <li>Оскорбления, хамство, нецензурная лексика</li>
+                    <li>Распространение материалов непристойного содержания</li>
+                    <li>Пропаганда атеизма, сектантства, иных религий</li>
+                    <li>Коммерческая деятельность без разрешения администрации</li>
+                    <li>Спам и рассылка нежелательных сообщений</li>
+                    <li>Домогательства и навязчивое поведение</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="important">
+                <h3>⚠ Важно!</h3>
+                <p>Администрация оставляет за собой право удалить профиль пользователя без предупреждения в случае:</p>
+                <ul class="rules-list">
+                    <li>Грубого нарушения правил сайта</li>
+                    <li>Мошеннических действий</li>
+                    <li>Распространения запрещенной информации</li>
+                    <li>Неоднократных жалоб от других пользователей</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+                <h2>4. Конфиденциальность и безопасность</h2>
+                <ul class="rules-list">
+                    <li>Администрация обязуется сохранять конфиденциальность личных данных пользователей</li>
+                    <li>Не рекомендуется сообщать незнакомым людям свой адрес, финансовые данные</li>
+                    <li>При подозрительном поведении собеседника обращайтесь в службу поддержки</li>
+                    <li>Администрация не несет ответственности за действия пользователей вне сайта</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+                <h2>5. Ответственность</h2>
+                <p>Пользователи самостоятельно несут ответственность за:</p>
+                <ul class="rules-list">
+                    <li>Содержание размещаемой информации</li>
+                    <li>Свои действия и высказывания на сайте</li>
+                    <li>Последствия встреч и общения с другими пользователями</li>
+                </ul>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="section">
+                <h2>6. Заключительные положения</h2>
+                <p>Администрация имеет право изменять настоящие правила. Пользователи будут уведомлены о внесении изменений.</p>
+                <p>По всем вопросам обращайтесь в службу поддержки через форму обратной связи.</p>
+                <p style="margin-top: 30px; text-align: center; font-style: italic; color: #5a67d8;">
+                    Желаем вам обрести счастье и создать крепкую христианскую семью! ✝
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}

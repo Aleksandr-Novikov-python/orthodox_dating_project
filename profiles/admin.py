@@ -8,7 +8,7 @@ from django.db import transaction
 
 from profiles.services.photo_verification import PhotoVerificationService, calculate_photo_hash, verify_photo_originality
 from .models import (
-    Comment, Complaint, Post, StaticPage, UserProfile,
+    Comment, Complaint, Post, StaticPage, TelegramUser, UserProfile,
     Photo, Like, Message, Notification, UserSession, UserActivity, ComplaintLog
 )
 logger = logging.getLogger(__name__)
@@ -897,6 +897,8 @@ class SessionLogAdmin(admin.ModelAdmin):
         return "-"
     duration_display.short_description = "Длительность"
 
+
+    
 # ==============================================================================
 # НАСТРОЙКА АДМИН-ПАНЕЛИ
 # ==============================================================================

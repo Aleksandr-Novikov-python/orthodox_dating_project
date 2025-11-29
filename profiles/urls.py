@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.urls import path
 
-from profiles.views import CustomLogoutView
+from profiles.views import CustomLogoutView, api
+
 from . import views
+
+
 from profiles.views import (
     OrthodoxCalendarView,
     CalendarAPIView,
@@ -95,6 +98,12 @@ urlpatterns = [
      path('logout/', CustomLogoutView.as_view(), name='logout'),
      path('logged_out/', LoggedOutView.as_view(), name='logged_out'),
 
+    # ==============================================================================
+    # chat_grup
+    # ==============================================================================
+     path("api/check_user/", api.check_user, name="check_user"),
+     path("api/register_user/", api.register_user, name="register_user"),
+     path("api/get_user/<int:telegram_id>/", api.get_user, name="get_user"),
 ]
 
 

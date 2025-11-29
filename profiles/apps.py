@@ -9,6 +9,7 @@ class ProfilesConfig(AppConfig):
     name = 'profiles'
     verbose_name = 'Профили пользователей'
 
+
     def ready(self):
         import profiles.signals.profile_signals
         import profiles.signals.handle_like_notification_signal
@@ -17,4 +18,6 @@ class ProfilesConfig(AppConfig):
         import profiles.signals.complaint_signal
         import profiles.signals.create_user_profile_signal
         import profiles.signals.photo_signals
+        import profiles.signals
+
 

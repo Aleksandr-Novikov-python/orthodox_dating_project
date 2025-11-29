@@ -1,4 +1,5 @@
 
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -933,3 +934,42 @@ class SessionLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} | {self.action} | {self.status} | {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+
+#==========================================================================
+#  Проверка пользователя для чат-Групы
+#==========================================================================
+class TelegramUser(models.Model):
+    telegram_id = models.BigIntegerField(
+        unique=True,
+        verbose_name="ID Telegram",
+        db_index=True
+    )
+    username = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Username"
+    )
+    first_name = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Имя"
+    )
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Email"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата регистрации"
+    )
+
+    class Meta:
+        verbose_name = "Пользователь Telegram"
+        verbose_name_plural = "Пользователи Telegram"
+
+    def __str__(self):
+        return f"{self.email} ({self.telegram_id})"
+
+

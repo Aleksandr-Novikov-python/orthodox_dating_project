@@ -30,6 +30,7 @@ django-silk==5.4.3
 django-q2
 daphne==4.1.2
 flower
+python-dotenv==1.0.1
 
 
 

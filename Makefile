@@ -40,8 +40,16 @@ clean:
 pipcheck:
 	@docker-compose exec web pip check
 
+BUILDX_VERSION=0.17.1
+
+buildx-install:
+	mkdir -p ~/.docker/cli-plugins
+	curl -L https://github.com/docker/buildx/releases/download/v$(BUILDX_VERSION)/buildx-v$(BUILDX_VERSION).linux-amd64 \
+		-o ~/.docker/cli-plugins/docker-buildx
+	chmod +x ~/.docker/cli-plugins/docker-buildx
 
 
+#source venv/bin/activate
 
 # ✅ Как использовать
 # make up — запустить проект
@@ -63,3 +71,5 @@ pipcheck:
 # make flower — открыть Flower в браузере
 
 # make web — открыть сайт
+
+# make buildx-install
