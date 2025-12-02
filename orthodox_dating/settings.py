@@ -18,12 +18,9 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # ALLOWED_HOSTS из переменной окружения
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS',
-    default='127.0.0.1,localhost'
+    default='127.0.0.1,localhost,venec.store'
 ).split(',')
 
-# Добавляем PythonAnywhere хост если он есть
-if 'ddoltann.pythonanywhere.com' not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append('ddoltann.pythonanywhere.com')
 
 
 # ==============================================================================
