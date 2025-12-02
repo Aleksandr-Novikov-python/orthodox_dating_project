@@ -1,0 +1,268 @@
+
+/* === Premium styles.css: warm, calm palette with smooth animation === */
+
+/*:root{*/
+/*  --accent:#d1a00dff;*/
+/*  --accent-strong:#b5890c;*/
+/*  --muted:#6c757d;*/
+/*  --bg-warm:#fffbe6;*/
+/*  --panel:#f4f1bb;*/
+/*  --text:#212529;*/
+/*}*/
+
+/**{box-sizing:border-box}*/
+/*body.site-body{*/
+/*  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;*/
+/*  background:#f8f9fa;*/
+/*  color:var(--text);*/
+/*  -webkit-font-smoothing:antialiased;*/
+/*  -moz-osx-font-smoothing:grayscale;*/
+/*}*/
+
+/*.content-wrapper{*/
+/*  background:var(--panel);*/
+/*  border-radius:12px;*/
+/*  padding:28px;*/
+/*  box-shadow:0 8px 30px rgba(0,0,0,0.06);*/
+/*  margin-top:20px;*/
+/*}*/
+
+/* logo */
+/*.logo{width:120px;border-radius:50%;}*/
+
+/* Navbar */
+/*.navbar{background:#0b0c0b;border-bottom:3px solid rgba(209,160,13,0.15)}*/
+/*.navbar .nav-link{color:var(--accent);transition:color .18s,transform .18s}*/
+/*.navbar .nav-link.active, .navbar .nav-link:hover{color:#fff}*/
+/*.notif-badge{position:relative;top:-6px;left:-6px;background:#dc3545;color:#fff;padding:.15rem .45rem;border-radius:999px;font-size:.75rem}*/
+
+/* Cards & panels */
+/*.card{border-radius:12px}*/
+/*.bg-post{background:var(--bg-warm)}*/
+/*.card .card-body{padding:1.25rem}*/
+
+/* Buttons */
+.btn-custom{
+  background:var(--accent);
+  color:#fff;
+  border-radius:10px;
+  padding:.6rem 1.05rem;
+  transition:transform .15s ease, box-shadow .15s ease, background .15s;
+  border:none;
+  box-shadow:0 6px 18px rgba(18,18,18,0.06);
+  text-align: center;
+}
+.btn-custom:hover{transform:translateY(-3px);background:var(--accent-strong);box-shadow:0 12px 30px rgba(0,0,0,0.08);}
+
+/* Buttons delete*/
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ff0303;
+  font-size: 0.85rem;
+  padding: 0;
+  margin-top: 4px;
+  float: right;
+  transition: color 0.2s ease;
+}
+
+
+/* subtle card hover */
+.card-hover{transition:transform .18s ease, box-shadow .18s ease}
+.card-hover:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.08)}
+
+/* Post title */
+.text-post-title{color:#614a04;}
+
+/* Comments */
+.comment{
+  display:flex;gap:1rem;align-items:flex-start;
+  padding:1rem;background:#fff;border-left:4px solid var(--accent);
+  border-radius:10px;margin-bottom:1.25rem;box-shadow:0 6px 18px rgba(0,0,0,0.03)
+}
+.comment img{width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.comment .comment-body{flex:1}
+.comment strong{color:#614a04}
+.comment .actions button{margin-right:.5rem}
+
+/* Replies */
+.reply{
+  display:flex;gap:.75rem;align-items:flex-start;
+  padding:.8rem;background:#fff8dc;border-left:3px solid #aaa;border-radius:8px;margin-top:1rem;
+}
+.reply img{width:45px;height:45px;border-radius:50%;object-fit:cover}
+
+/* responsive for comments */
+@media (max-width:576px){
+  .comment,.reply{flex-direction:column;align-items:flex-start}
+  .reply{margin-left:1rem}
+}
+
+/* animations: fade-in blocks */
+.fade-block{opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease}
+.fade-block.in-view{opacity:1;transform:none}
+
+/* highlight new comment */
+.bg-highlight{animation:highlightFade 2.2s ease-out}
+@keyframes highlightFade{from{background:#fff3cd}to{background:transparent}}
+
+/* Helper utilities */
+.mt-sm{margin-top:.6rem}
+.mb-sm{margin-bottom:.6rem}
+
+/* Hero */
+.hero-section{background:var(--bg-warm);padding:48px;border-radius:12px}
+
+.message-time {
+  background: none;
+  border: none;
+  color: #7c7978;
+  font-size: 0.85rem;
+}
+
+/*like*/
+
+.likes-header {
+  color: #c39d0a;
+  margin-bottom: 1.5rem;
+}
+
+.profile-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.profile-img-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 125%; /* Соотношение 4:5 для портрета */
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.profile-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.profile-card:hover .profile-img {
+  transform: scale(1.05);
+}
+
+.verified-badge {
+  color: #0d6efd;
+  font-size: 1rem;
+  margin-left: 0.25rem;
+}
+
+.btn-view-profile {
+  background-color: #d1a00d;
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-view-profile:hover {
+  background-color: #b88d0b;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+}
+
+.empty-state {
+  background-color: #f4f1bb;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  max-width: 600px;
+  margin: 3rem auto;
+}
+
+.card-body-content {
+  background-color: #fff;
+  border-radius: 0 0 12px 12px;*/
+}
+
+/* post-detail */
+
+.post-container {
+  min-height: 70vh;
+  background-color: #e9d884;
+  padding: 2rem 0;
+}
+
+.post-card {
+  background-color: #fffbe6;
+  border-radius: 12px;
+  border: none;
+  margin-bottom: 1.5rem;
+}
+
+.post-title {
+  color: #614a04;
+  font-weight: 600;
+}
+
+.post-content {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+.post-content p {
+  margin-bottom: 1rem;
+}
+
+.btn-submit-comment {
+  background-color: #d1a00d;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 20px;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-submit-comment:hover {
+  background-color: #b88d0b;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(209, 160, 13, 0.3);
+}
+
+.alert-auth {
+  font-size: 1.1rem;
+  background-color: #e9d884;
+  color: #0c0d0b;
+  border: none;
+  border-radius: 8px;
+}
+
+.comment-item {
+  transition: background-color 0.3s ease;
+}
+
+.comment-item.new-comment {
+  animation: highlight 2s ease-in-out;
+}
+
+@keyframes highlight {
+  0%, 100% { background-color: transparent; }
+  50% { background-color: #fff9e6; }
+}
+
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
